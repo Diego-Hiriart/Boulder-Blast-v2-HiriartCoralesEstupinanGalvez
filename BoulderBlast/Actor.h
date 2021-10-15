@@ -22,6 +22,7 @@ public:
 	bool isAlive();
 	void setHealth(int health);
 	int getHealth();
+	void morir();
 	StudentWorld* getWorld() {
 		return this->world;
 	}
@@ -46,10 +47,11 @@ public:
 		this->ammo = 20;
 	}
 	void moveActor(int xDest, int yDest);
-	void colision(int xDest, int yDest);
+	bool colision(int destino);
 	void doSomething();
 	void disparar();
 	void aumentaAmmo(int cantidad);
+	void morir();
 	int getAmmo();
 private:
 	int ammo;
@@ -77,10 +79,11 @@ class Bullet : public Actor {
 public:
 	Bullet(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_BULLET, startx, starty, dir, world) {
 		this->setAlive();
+		this->setVisible(true);
 	}
 	void moveActor(int xDest, int yDest);
 	void doSomething();
-	void colision();
+	bool colision(int x, int y);
 };
 
 class Hole : public Actor {
@@ -128,35 +131,30 @@ public:
 	}
 };
 
-class SnarlbotVert : public Actor {
+class Snarlbot : public Actor {
 public:
-	SnarlbotVert(int startx, int starty, StudentWorld* world) : Actor(IID_SNARLBOT, startx, starty, down, world) {
+	Snarlbot(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_SNARLBOT, startx, starty, dir, world) {
 		this->setAlive();
 		this->setHealth(10);
 	}
-};
-
-class SnarlbotHoriz : public Actor {
-public:
-	SnarlbotHoriz(int startx, int starty, StudentWorld* world) : Actor(IID_SNARLBOT, startx, starty, right, world) {
-		this->setAlive();
-		this->setHealth(10);
-	}
+	void doSomething();
+	void colision(int x, int y);
+	void disparar();
 };
 
 class Kleptobot : public Actor {
 public:
-	Kleptobot(int startx, int starty, StudentWorld* world) : Actor(IID_KLEPTOBOT, startx, starty, right, world) {
+	Kleptobot(int startx, int starty, StudentWorld* world, int IID) : Actor(IID, startx, starty, right, world) {
 		this->setAlive();
 		this->setHealth(5);
 	}
 };
 
-class AngryKleptobot : public Actor {
+class AngryKleptobot : public Kleptobot {
 public:
-	AngryKleptobot(int startx, int starty, StudentWorld* world) : Actor(IID_ANGRY_KLEPTOBOT, startx, starty, right, world) {
+	AngryKleptobot(int startx, int starty, StudentWorld* world, int IID) : Kleptobot(startx, starty, world, IID) {
 		this->setAlive();
-		this->setHealth(8);		
+		this->setHealth(8);	
 	}
 };
 

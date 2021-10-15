@@ -2,6 +2,7 @@
 #include <string>
 #include "Actor.h"
 #include <algorithm>
+#include "GraphObject.h"
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -56,12 +57,12 @@ int StudentWorld::init()
 					break;
 
 				case Level::horiz_snarlbot:
-					addActor(new SnarlbotHoriz(x, y, this));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::right));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::vert_snarlbot:
-					addActor(new SnarlbotVert(x, y, this));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::down));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
@@ -88,6 +89,7 @@ int StudentWorld::init()
 				case Level::jewel:
 					addActor(new Jewel(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
+					increaseNumJewels();
 					break;
 
 				case Level::restore_health:
@@ -179,6 +181,7 @@ void StudentWorld::setGameText() {
 	gameText << "  Level: " << setfill('0') << setw(2) << getLevel();
 	gameText << "  Lives: " << setfill(' ') << setw(2) << getLives();
 	gameText << "  Health: " << setfill(' ') << setw(3) << (dynamic_cast<Player*>(player)->getHealth() * 5);
+	gameText << "  Ammo: " << setfill(' ') << setw(3) << dynamic_cast<Player*>(player)->getAmmo();
 	gameText << "  Bonus: " << setfill(' ') << setw(4) << getBonus();
 	setGameStatText(gameText.str());
 }
@@ -222,5 +225,13 @@ int StudentWorld::getBonus() {
 }
 void StudentWorld::decreaseBonus() {
 	bonus--;
+}
+
+void StudentWorld::reduceNumJewels() {
+	numJewels--;
+}
+
+void StudentWorld::increaseNumJewels() {
+	numJewels++;
 }
 
