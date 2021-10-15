@@ -1,0 +1,11 @@
+﻿  Actor.cpp
+  GameController.cpp
+  GameWorld.cpp
+  main.cpp
+  StudentWorld.cpp
+K:\Examples\C++\BoulderBlast\BoulderBlast\StudentWorld.cpp(82,20): warning C4018: '<': signed/unsigned mismatch
+K:\Examples\C++\BoulderBlast\BoulderBlast\StudentWorld.cpp(86,9): warning C4018: '>': signed/unsigned mismatch
+K:\Examples\C++\BoulderBlast\BoulderBlast\StudentWorld.cpp(81,7): warning C4101: 'turn': unreferenced local variable
+K:\Examples\C++\BoulderBlast\BoulderBlast\StudentWorld.cpp(140,20): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+  BoulderBlast.vcxproj -> K:\Examples\C++\BoulderBlast\Debug\BoulderBlast.exe
