@@ -36,6 +36,9 @@ void Actor::decreaseHealth(int amount) {
 			health = 0;
 		}
 	}
+	if (health <= 0) {//Matar al actor si su salud llega a cero
+		this->alive == false;
+	}
 }
 void Actor::changeDirection(Direction dir) {
 	Direction d = this->getDirection();
@@ -44,49 +47,38 @@ void Actor::changeDirection(Direction dir) {
 	}
 }
 
+void Actor::disparar() {
+	Direction direccion = this->getDirection();
+	switch (direccion) {
+	case up:
+		this->getWorld()->addActor(new Bullet(this->getX(), this->getY() + 1, this->getWorld()));
+		break;
 
-void Player::moveActor(int xDest, int yDest){ 
-		Actor* w = nullptr; // El personaje
-		StudentWorld* world = getWorld(); 
-		// Aqui el codigo para mover al personaje
-		//Aqui inicia el control para saber si hay una pared en el destino, usando las posiciones de levelxx.dat en Assets	
-		//Este codigo para leer el archivo y para saber que hacer en cada caso para las coordendas sale del init() de StudentWorld.cpp
-		//Las funciones para leer e intepretar el documento .dat son de Level.h
-		Level lev(assetDirectory);
-		std::stringstream level;
-		level.str(std::string());
-		level << "level" << setfill('0') << setw(2) << this->getWorld()->getLevel() << ".dat";
-		//cout << "Nivel:" << level.str() << "\n";
-		/* Este cout es para Debug, no estaba seguro de que hace 
-		* "level << " level" << setfill('0') << setw(2) << this->getWorld()->getLevel() << ".dat"; " 
-		* y tenia que saber que este cargando el nivel correcto */
-		Level::LoadResult result = lev.loadLevel(level.str());//Cargar el nivel para sacar lo que hay en cada coordenada
-		if (result == Level::load_success) {//Seguir si encuentra el nivel; por si acaso para evitar errores, como se hace en StudentWorld.cpp
-			bool puedeMoverse = false;//Siempre partir de que no podra moverse, por si acaso
-			Level::MazeEntry ge = lev.getContentsOf(xDest, yDest);//Ver el contenido de las coordenadas de destino
-			switch (ge){//Segun el contenido de las coordendas de destino, determinar si se puede mover o no
-				case Level::empty://Si esta vacio el destino, se puede mover, cambiar puedeMoverse a true 
-					puedeMoverse = true;
-				break;	
+	case down:
+		this->getWorld()->addActor(new Bullet(this->getX(), this->getY() - 1, this->getWorld()));
+		break;
 
-				case Level::wall://Si hay una pared, no se puede mover, asegurarse de que puedeMoverse este en false
-					puedeMoverse=false;
-				break;
+	case left:
+		this->getWorld()->addActor(new Bullet(this->getX() - 1, this->getY(), this->getWorld()));
+		break;
 
-				/*Este default es necesario porque hay otros contenidos en las coordendas del nivel en el archivo .dat, 
-				* pero no aparecen en la pantalla aun. El personaje debe poder moverse si no hay algo, por eso si no es una pared 
-				* y tampoco esta vacio, debe poder moverse tambien (puedeMoverse=true)*/
-				default:
-					puedeMoverse = true;
-				break;
-			}			
-			if (puedeMoverse) {//Si se detecto que no hay una pared, se puede mover
-				this->moveTo(xDest, yDest);//Desplazamiento
-			}			
-		}		
+	case right:
+		this->getWorld()->addActor(new Bullet(this->getX() + 1, this->getY(), this->getWorld()));
+		break;
 	}
+}
 
-void Player::doSomething(){
+
+void Player::moveActor(int xDest, int yDest) {
+	Actor* w = nullptr; // El personaje
+	StudentWorld* world = getWorld();
+	// Aqui el codigo para mover al personaje		
+	if (world->getActorByCoordinates(xDest, yDest) == nullptr) {//Si el actor en las coordenadas es un pointer null, no hay obstaculos, puede moverse
+		moveTo(xDest, yDest);
+	}
+}
+
+void Player::doSomething() {
 	if (!isVisible()) {
 		setVisible(true);
 	}
@@ -97,28 +89,36 @@ void Player::doSomething(){
 	this->getWorld()->getKey(tecla);//Guardar tecla presionada
 	int x = this->getX(), y = this->getY();//Obtener posicion actual del actor, a esta se le modifica segun la tecla presionada
 	switch (tecla) {//Switch para saber que tecla se presiono y segun ello obtener coordendas de destino para moveActor()
-		case KEY_PRESS_LEFT:
-			x--;//Se mueve a la izquierda (modificar posicion, coordenadas de destino a usar en moveActor)
-			this->changeDirection(left);//Ver a la izq
-			this->moveActor(x, y);//Mover al actor a la posicion modificada, se verifica si se puede mover dentro del metodo
+	case KEY_PRESS_LEFT:
+		x--;//Se mueve a la izquierda (modificar posicion, coordenadas de destino a usar en moveActor)
+		this->changeDirection(left);//Ver a la izq
+		this->moveActor(x, y);//Mover al actor a la posicion modificada, se verifica si se puede mover dentro del metodo
 		break;
 
-		case KEY_PRESS_UP:
-			y++;//Se mueve hacia arriba
-			this->changeDirection(up);//Ver arriba
-			this->moveActor(x, y);
+	case KEY_PRESS_UP:
+		y++;//Se mueve hacia arriba
+		this->changeDirection(up);//Ver arriba
+		this->moveActor(x, y);
 		break;
 
-		case KEY_PRESS_DOWN:
-			y--;//Se mueve para abajo
-			this->changeDirection(down);//Ver abajo
-			this->moveActor(x, y);
+	case KEY_PRESS_DOWN:
+		y--;//Se mueve para abajo
+		this->changeDirection(down);//Ver abajo
+		this->moveActor(x, y);
 		break;
 
-		case KEY_PRESS_RIGHT:
-			x++;//Actualizar posicion a la derecha
-			this->changeDirection(right);//Ver a la derecha
-			this->moveActor(x, y);
+	case KEY_PRESS_RIGHT:
+		x++;//Actualizar posicion a la derecha
+		this->changeDirection(right);//Ver a la derecha
+		this->moveActor(x, y);
+		break;
+
+	case KEY_PRESS_ESCAPE:
+		this->decreaseHealth(this->getHealth());//Matar al actor
+		break;
+
+	case KEY_PRESS_SPACE:
+		this->disparar();
 		break;
 
 	}

@@ -29,7 +29,7 @@ int StudentWorld::init()
 	else if (result == Level::load_fail_bad_format) {
 		return GWSTATUS_LEVEL_ERROR;
 	}
-	else if (result == Level::load_success){
+	else if (result == Level::load_success) {
 		bool visible = false;
 		setBonus();
 		for (int x = 0; x < VIEW_WIDTH; x++) {
@@ -48,6 +48,60 @@ int StudentWorld::init()
 					break;
 				case Level::wall:
 					addActor(new Wall(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::exit:
+					addActor(new Exit(x, y, this));//Se inicia invisible en el constructor
+					break;
+
+				case Level::horiz_snarlbot:
+					addActor(new SnarlbotHoriz(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::vert_snarlbot:
+					addActor(new SnarlbotVert(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::kleptobot_factory:
+					addActor(new KleptobotFactory(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::angry_kleptobot_factory:
+					addActor(new AngryKleptobotFactory(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::boulder:
+					addActor(new Boulder(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::hole:
+					addActor(new Hole(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::jewel:
+					addActor(new Jewel(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::restore_health:
+					addActor(new RestoreHealth(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::extra_life:
+					addActor(new ExtraLife(x, y, this));
+					getActorByCoordinates(x, y)->setVisible(true);
+					break;
+
+				case Level::ammo:
+					addActor(new Ammo(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 				}
@@ -75,13 +129,14 @@ int StudentWorld::move()
 			levelRetry = true;
 			goto exit;
 		}
-	} else {
+	}
+	else {
 		endGame = true;
 	}
 	bool turn;
 	for (int i = 0; i < actorVector.size(); i++) {
 		int g = actorVector.size();
-		if(dynamic_cast<Wall*>(actorVector[i]) == nullptr)
+		if (dynamic_cast<Wall*>(actorVector[i]) == nullptr)
 			dynamic_cast<Actor*>(actorVector[i])->doSomething();
 		if (g > actorVector.size()) {
 			i -= (g - actorVector.size()); // since new object will be at current location
@@ -95,12 +150,12 @@ int StudentWorld::move()
 	}
 	setGameText();
 	return GWSTATUS_CONTINUE_GAME;
-	exit: // if player dies or user decides to restart level
-		this->decLives();
-		if (!levelRetry) {
-			this->playSound(SOUND_PLAYER_DIE); // should not play if player decides to retry, like in the original game
-		}
-		return GWSTATUS_PLAYER_DIED;
+exit: // if player dies or user decides to restart level
+	this->decLives();
+	if (!levelRetry) {
+		this->playSound(SOUND_PLAYER_DIE); // should not play if player decides to retry, like in the original game
+	}
+	return GWSTATUS_PLAYER_DIED;
 }
 
 void StudentWorld::cleanUp() { // delete bullets, actors, and the player on the field
@@ -121,8 +176,8 @@ GraphObject* StudentWorld::getPlayer() {
 void StudentWorld::setGameText() {
 	gameText.str(std::string());
 	gameText << "Score: " << setfill('0') << setw(7) << getScore();
-	gameText << "  Level: " << setfill('0') << setw(2) << getLevel(); 
-	gameText << "  Lives: " << setfill(' ') << setw(2) << getLives(); 
+	gameText << "  Level: " << setfill('0') << setw(2) << getLevel();
+	gameText << "  Lives: " << setfill(' ') << setw(2) << getLives();
 	gameText << "  Health: " << setfill(' ') << setw(3) << (dynamic_cast<Player*>(player)->getHealth() * 5);
 	gameText << "  Bonus: " << setfill(' ') << setw(4) << getBonus();
 	setGameStatText(gameText.str());

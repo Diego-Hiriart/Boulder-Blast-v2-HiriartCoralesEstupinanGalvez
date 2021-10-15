@@ -1,11 +1,3 @@
 ﻿  Actor.cpp
-  GameController.cpp
-  GameWorld.cpp
-  main.cpp
-  StudentWorld.cpp
-C:\UDLA\Sexto semestre 2022-10 sept27\Programacion 5 ISWZ2104\Progreso 1\BoulderBlast\BoulderBlast\StudentWorld.cpp(82,20): warning C4018: '<': signed/unsigned mismatch
-C:\UDLA\Sexto semestre 2022-10 sept27\Programacion 5 ISWZ2104\Progreso 1\BoulderBlast\BoulderBlast\StudentWorld.cpp(86,9): warning C4018: '>': signed/unsigned mismatch
-C:\UDLA\Sexto semestre 2022-10 sept27\Programacion 5 ISWZ2104\Progreso 1\BoulderBlast\BoulderBlast\StudentWorld.cpp(81,7): warning C4101: 'turn': unreferenced local variable
-C:\UDLA\Sexto semestre 2022-10 sept27\Programacion 5 ISWZ2104\Progreso 1\BoulderBlast\BoulderBlast\StudentWorld.cpp(140,20): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
-  BoulderBlast.vcxproj -> C:\UDLA\Sexto semestre 2022-10 sept27\Programacion 5 ISWZ2104\Progreso 1\BoulderBlast\Debug\BoulderBlast.exe
+C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\Actor.cpp(40,15): warning C4553: '==': result of expression not used; did you intend '='?
+  BoulderBlast.vcxproj -> C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe
