@@ -22,7 +22,6 @@ public:
 	bool isAlive();
 	void setHealth(int health);
 	int getHealth();
-	void disparar();
 	StudentWorld* getWorld() {
 		return this->world;
 	}
@@ -44,9 +43,16 @@ public:
 	Player(int startx, int starty, StudentWorld* world) : Actor(IID_PLAYER, startx, starty, right, world) {
 		this->setAlive(); // player is alive
 		this->setHealth(20);
+		this->ammo = 20;
 	}
 	void moveActor(int xDest, int yDest);
+	void colision(int xDest, int yDest);
 	void doSomething();
+	void disparar();
+	void aumentaAmmo(int cantidad);
+	int getAmmo();
+private:
+	int ammo;
 
 };
 
@@ -69,9 +75,12 @@ public:
 
 class Bullet : public Actor {
 public:
-	Bullet(int startx, int starty, StudentWorld* world) : Actor(IID_BULLET, startx, starty, none, world) {
-
+	Bullet(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_BULLET, startx, starty, dir, world) {
+		this->setAlive();
 	}
+	void moveActor(int xDest, int yDest);
+	void doSomething();
+	void colision();
 };
 
 class Hole : public Actor {
@@ -137,17 +146,17 @@ public:
 
 class Kleptobot : public Actor {
 public:
-	Kleptobot(int startx, int starty, StudentWorld* world) : Actor(IID_SNARLBOT, startx, starty, right, world) {
+	Kleptobot(int startx, int starty, StudentWorld* world) : Actor(IID_KLEPTOBOT, startx, starty, right, world) {
 		this->setAlive();
 		this->setHealth(5);
 	}
 };
 
-class AngryKleptobot : public Kleptobot {
+class AngryKleptobot : public Actor {
 public:
-	AngryKleptobot(int startx, int starty, StudentWorld* world) : Kleptobot(startx, starty, world) {
+	AngryKleptobot(int startx, int starty, StudentWorld* world) : Actor(IID_ANGRY_KLEPTOBOT, startx, starty, right, world) {
 		this->setAlive();
-		this->setHealth(8);
+		this->setHealth(8);		
 	}
 };
 

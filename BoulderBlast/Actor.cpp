@@ -47,25 +47,33 @@ void Actor::changeDirection(Direction dir) {
 	}
 }
 
-void Actor::disparar() {
-	Direction direccion = this->getDirection();
-	switch (direccion) {
-	case up:
-		this->getWorld()->addActor(new Bullet(this->getX(), this->getY() + 1, this->getWorld()));
-		break;
+int Player::getAmmo() {
+	return this->ammo;
+}
 
-	case down:
-		this->getWorld()->addActor(new Bullet(this->getX(), this->getY() - 1, this->getWorld()));
-		break;
+void Player::disparar() {
+	if (this->getAmmo() >0) {
+		Direction direccion = this->getDirection();
+		switch (direccion) {
+		case up:
+			this->getWorld()->addActor(new Bullet(this->getX(), this->getY() + 1, this->getWorld(), direccion));
+			break;
 
-	case left:
-		this->getWorld()->addActor(new Bullet(this->getX() - 1, this->getY(), this->getWorld()));
-		break;
+		case down:
+			this->getWorld()->addActor(new Bullet(this->getX(), this->getY() - 1, this->getWorld(), direccion));
+			break;
 
-	case right:
-		this->getWorld()->addActor(new Bullet(this->getX() + 1, this->getY(), this->getWorld()));
-		break;
-	}
+		case left:
+			this->getWorld()->addActor(new Bullet(this->getX() - 1, this->getY(), this->getWorld(), direccion));
+			break;
+
+		case right:
+			this->getWorld()->addActor(new Bullet(this->getX() + 1, this->getY(), this->getWorld(), direccion));
+			break;
+		}
+		this->getWorld()->playSound(SOUND_PLAYER_FIRE);
+		this->ammo -= 1;
+	}	
 }
 
 
@@ -73,9 +81,45 @@ void Player::moveActor(int xDest, int yDest) {
 	Actor* w = nullptr; // El personaje
 	StudentWorld* world = getWorld();
 	// Aqui el codigo para mover al personaje		
-	if (world->getActorByCoordinates(xDest, yDest) == nullptr) {//Si el actor en las coordenadas es un pointer null, no hay obstaculos, puede moverse
-		moveTo(xDest, yDest);
+	if (world->getActorByCoordinates(xDest, yDest) == nullptr) {//Si el actor en las coordenadas es un pointer null, no hay obstaculos, puede moverse		
+		this->colision(xDest, yDest);
+		moveTo(xDest, yDest);		
 	}
+}
+
+void Player::colision(int xDest, int yDest) {	
+	int colision = this->getWorld()->getActorByCoordinates(xDest, yDest)->getID();
+	switch (colision) {
+	case 5:
+		this->decreaseHealth(2);
+		break;
+	case 10:
+		this->getWorld()->increaseScore(50);
+		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		break;
+	case 11:
+		this->setHealth(20);
+		this->getWorld()->increaseScore(500);
+		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		break;
+	case 12:
+		this->getWorld()->incLives();
+		this->getWorld()->increaseScore(1000);
+		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		break;
+	case 13:
+		this->getWorld()->increaseScore(100);
+		this->aumentaAmmo(20);
+		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		break;
+	default://cuadro vacio, player, snarl, kleptos, pared, factory
+		//Nada
+		break;
+	}
+}
+
+void Player::aumentaAmmo(int cantidad) {
+	this->ammo += 20;
 }
 
 void Player::doSomething() {
@@ -83,44 +127,111 @@ void Player::doSomething() {
 		setVisible(true);
 	}
 	StudentWorld* world = getWorld(); // world guarda el estado actual del nivel.
-	// Aqui el codigo para detectar las teclas.
-	//La deteccion de teclas salio del ejemplo en la tarea
-	int tecla;//Declaracion de variable para almacenar tecla
-	this->getWorld()->getKey(tecla);//Guardar tecla presionada
-	int x = this->getX(), y = this->getY();//Obtener posicion actual del actor, a esta se le modifica segun la tecla presionada
-	switch (tecla) {//Switch para saber que tecla se presiono y segun ello obtener coordendas de destino para moveActor()
-	case KEY_PRESS_LEFT:
-		x--;//Se mueve a la izquierda (modificar posicion, coordenadas de destino a usar en moveActor)
-		this->changeDirection(left);//Ver a la izq
-		this->moveActor(x, y);//Mover al actor a la posicion modificada, se verifica si se puede mover dentro del metodo
+	if (this->isAlive()) {		
+		// Aqui el codigo para detectar las teclas.
+		//La deteccion de teclas salio del ejemplo en la tarea
+		int tecla;//Declaracion de variable para almacenar tecla
+		this->getWorld()->getKey(tecla);//Guardar tecla presionada
+		int x = this->getX(), y = this->getY();//Obtener posicion actual del actor, a esta se le modifica segun la tecla presionada
+		switch (tecla) {//Switch para saber que tecla se presiono y segun ello obtener coordendas de destino para moveActor()
+		case KEY_PRESS_LEFT:
+			x--;//Se mueve a la izquierda (modificar posicion, coordenadas de destino a usar en moveActor)
+			this->changeDirection(left);//Ver a la izq
+			this->moveActor(x, y);//Mover al actor a la posicion modificada, se verifica si se puede mover dentro del metodo
+			break;
+
+		case KEY_PRESS_UP:
+			y++;//Se mueve hacia arriba
+			this->changeDirection(up);//Ver arriba
+			this->moveActor(x, y);
+			break;
+
+		case KEY_PRESS_DOWN:
+			y--;//Se mueve para abajo
+			this->changeDirection(down);//Ver abajo
+			this->moveActor(x, y);
+			break;
+
+		case KEY_PRESS_RIGHT:
+			x++;//Actualizar posicion a la derecha
+			this->changeDirection(right);//Ver a la derecha
+			this->moveActor(x, y);
+			break;
+
+		case KEY_PRESS_ESCAPE:
+			this->decreaseHealth(this->getHealth());//Matar al actor
+			break;
+
+		case KEY_PRESS_SPACE:
+			this->disparar();
+			break;
+
+		}
+	}	
+}
+
+
+void Bullet::moveActor(int xDest, int yDest) {
+	Direction direccion = this->getDirection();
+	switch (direccion) {
+	case up:
+		this->moveTo(this->getX(), this->getY()+1);
 		break;
 
-	case KEY_PRESS_UP:
-		y++;//Se mueve hacia arriba
-		this->changeDirection(up);//Ver arriba
-		this->moveActor(x, y);
+	case down:
+		this->moveTo(this->getX(), this->getY()-1);
 		break;
 
-	case KEY_PRESS_DOWN:
-		y--;//Se mueve para abajo
-		this->changeDirection(down);//Ver abajo
-		this->moveActor(x, y);
+	case left:
+		this->moveTo(this->getX()-1, this->getY());
 		break;
 
-	case KEY_PRESS_RIGHT:
-		x++;//Actualizar posicion a la derecha
-		this->changeDirection(right);//Ver a la derecha
-		this->moveActor(x, y);
+	case right:
+		this->moveTo(this->getX()+1, this->getY());
 		break;
-
-	case KEY_PRESS_ESCAPE:
-		this->decreaseHealth(this->getHealth());//Matar al actor
-		break;
-
-	case KEY_PRESS_SPACE:
-		this->disparar();
-		break;
-
 	}
+}
 
+void Bullet::doSomething() {
+	if (isAlive()) {
+		this->colision();
+	}
+}
+
+void Bullet::colision() {
+	int colision = this->getWorld()->getActorByCoordinates(this->getX(), this->getY())->getID();
+	switch (colision) {
+	case 0://Player
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 1://Snarl
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 2://klepto
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 3://Angry klepto
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 4://Factory
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 6://Pared
+		this->eraseActor();
+		this->alive = false;
+		break;
+	case 8:
+		this->eraseActor();
+		this->alive = false;
+		break;
+	default://cuadro vacio u otra bala
+		//Sigue viajando
+		this->moveActor(this->getX(), this->getY());
+		break;
+	}
 }
