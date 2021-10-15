@@ -1,2 +1,2 @@
 # Boulder Blast v2 HiriartCoralesEstupinanGalvez
- Resolucion del ejerciciode BoulderBlast semana 2
+ Resolución del ejercicio de BoulderBlast semana 2
