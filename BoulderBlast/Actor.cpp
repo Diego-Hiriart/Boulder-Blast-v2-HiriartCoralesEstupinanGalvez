@@ -53,6 +53,33 @@ void Actor::morir() {
 	this->getWorld()->deleteElement(this);
 }
 
+void Jewel::setRecogido(bool estado) {
+	this->recogido = estado;
+}
+
+bool Jewel::getRecogido() {
+	return this->recogido;
+}
+
+void Exit::JoyasRecolectadas() {//Hace visible a la salida
+	this->setVisible(true);
+	this->accesible = true;
+}
+
+void Exit::JoyasPerdidas() {//Vuelve a oculatr a la salida
+	this->setVisible(false);
+	this->accesible = false;
+}
+
+void Goodie::setRecogido(bool estado) {
+	this->recogido = estado;
+	this->setVisible(!estado);//Debe ser el contrario del estado de recogido
+}
+
+bool Goodie::getRecogido() {
+	return this->recogido;
+}
+
 int Player::getAmmo() {
 	return this->ammo;
 }
@@ -91,40 +118,52 @@ void Player::moveActor(int xDest, int yDest) {
 	if (destino == nullptr) {//Si el actor en las coordenadas es un pointer null, no hay obstaculos, puede moverse				
 		moveTo(xDest, yDest);
 	}
-	else if (!colision(destino->getID())) {//Si el metodo de colisionar retorna false, no colisiona y se puede pasar
+	else if (!colision(destino)) {//Si el metodo de colisionar retorna false, no colisiona y se puede pasar
 		moveTo(xDest, yDest);
 	}
 }
 
-bool Player::colision(int destino) {
+bool Player::colision(GraphObject* destino) {
 	bool colisiona = true;
-	switch (destino) {
+	switch (destino->getID()) {
 	case 5://Bullet
 		this->decreaseHealth(2);
 		colisiona = false;
 		break;
 	case 10://Jewel
-		this->getWorld()->increaseScore(50);
-		this->getWorld()->reduceNumJewels();
-		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		if (!dynamic_cast<Jewel*>(destino)->getRecogido()) {
+			this->getWorld()->increaseScore(50);
+			this->getWorld()->reduceNumJewels();
+			this->getWorld()->playSound(SOUND_GOT_GOODIE);
+			dynamic_cast<Jewel*>(destino)->setRecogido(true);
+		}		
 		colisiona = false;
 		break;
 	case 11://Health
-		this->setHealth(20);
-		this->getWorld()->increaseScore(500);
-		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		if (!dynamic_cast<RestoreHealth*>(destino)->getRecogido()) {
+			this->setHealth(20);
+			this->getWorld()->increaseScore(500);
+			this->getWorld()->playSound(SOUND_GOT_GOODIE);
+			dynamic_cast<RestoreHealth*>(destino)->setRecogido(true);
+		}		
 		colisiona = false;
 		break;
 	case 12://live
-		this->getWorld()->incLives();
-		this->getWorld()->increaseScore(1000);
-		this->getWorld()->playSound(SOUND_GOT_GOODIE);
-		colisiona = false;
+		if (!dynamic_cast<ExtraLife*>(destino)->getRecogido()) {
+			this->getWorld()->incLives();
+			this->getWorld()->increaseScore(1000);
+			this->getWorld()->playSound(SOUND_GOT_GOODIE);
+			colisiona = false;
+			dynamic_cast<ExtraLife*>(destino)->setRecogido(true);
+		}		
 		break;
 	case 13://Ammo
-		this->getWorld()->increaseScore(100);
-		this->aumentaAmmo(20);
-		this->getWorld()->playSound(SOUND_GOT_GOODIE);
+		if (!dynamic_cast<Ammo*>(destino)->getRecogido()) {
+			this->getWorld()->increaseScore(100);
+			this->aumentaAmmo(20);
+			this->getWorld()->playSound(SOUND_GOT_GOODIE);
+			dynamic_cast<Ammo*>(destino)->setRecogido(true);
+		}		
 		colisiona = false;
 		break;
 	default://snarl, kleptos, pared, factory, boulder, hole
@@ -245,6 +284,8 @@ bool Bullet::colision(int x, int y) {
 		case 3://Angry klepto
 			this->eraseActor();
 			this->alive = false;
+			dynamic_cast<AngryKleptobot*>(colision)->decreaseHealth(2);
+			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			break;
 		case 4://Factory
 			this->eraseActor();
@@ -254,9 +295,10 @@ bool Bullet::colision(int x, int y) {
 			this->eraseActor();
 			this->alive = false;
 			break;
-		case 8:
+		case 8://Boulder
 			this->eraseActor();
 			this->alive = false;
+			dynamic_cast<Boulder*>(colision)->decreaseHealth(2);
 			break;
 		default://cuadro vacio u otra bala
 			//Sigue viajando

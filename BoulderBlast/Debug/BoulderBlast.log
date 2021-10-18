@@ -1,8 +1,8 @@
 ﻿  Actor.cpp
   StudentWorld.cpp
-C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(139,20): warning C4018: '<': signed/unsigned mismatch
-C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(143,9): warning C4018: '>': signed/unsigned mismatch
-C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(138,7): warning C4101: 'turn': unreferenced local variable
-C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(198,20): warning C4018: '<': signed/unsigned mismatch
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(139,20): warning C4018: '<': signed/unsigned mismatch
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(143,9): warning C4018: '>': signed/unsigned mismatch
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(138,7): warning C4101: 'turn': unreferenced local variable
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(198,20): warning C4018: '<': signed/unsigned mismatch
   Generating Code...
-  BoulderBlast.vcxproj -> C:\Code UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe
+  BoulderBlast.vcxproj -> C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe

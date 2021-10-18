@@ -47,7 +47,7 @@ public:
 		this->ammo = 20;
 	}
 	void moveActor(int xDest, int yDest);
-	bool colision(int destino);
+	bool colision(GraphObject* destino);
 	void doSomething();
 	void disparar();
 	void aumentaAmmo(int cantidad);
@@ -98,35 +98,52 @@ public:
 	Jewel(int startx, int starty, StudentWorld* world) : Actor(IID_JEWEL, startx, starty, none, world) {
 
 	}
+	void setRecogido(bool estado);
+	bool getRecogido();
+private:
+	bool recogido;
 };
 
 class Exit : public Actor {
 public:
 	Exit(int startx, int starty, StudentWorld* world) : Actor(IID_EXIT, startx, starty, none, world) {
 		this->setVisible(false);
+		this->accesible = false;
 	}
-	void JoyasRecolectadas() {//Hace visible a la salida
-		this->setVisible(true);
+	void JoyasRecolectadas();//Hace visible a la salida
+	void JoyasPerdidas();//Vuelve a ocultar a la salida
+private:
+	bool accesible = false;
+};
+
+class Goodie : public Actor {
+public:
+	Goodie(int startx, int starty, StudentWorld* world, int ID) : Actor(ID, startx, starty, none, world) {
+		this->recogido;
+	}
+	void setRecogido(bool estado);
+	bool getRecogido();
+private:
+	bool recogido = false;
+};
+
+class ExtraLife : public Goodie {
+public:
+	ExtraLife(int startx, int starty, StudentWorld* world, int ID=IID_EXTRA_LIFE) : Goodie(startx, starty, world, ID) {
+
 	}
 };
 
-class ExtraLife : public Actor {
+class RestoreHealth : public Goodie {
 public:
-	ExtraLife(int startx, int starty, StudentWorld* world) : Actor(IID_EXTRA_LIFE, startx, starty, none, world) {
+	RestoreHealth(int startx, int starty, StudentWorld* world, int ID=IID_RESTORE_HEALTH) : Goodie(startx, starty, world, ID) {
 
 	}
 };
 
-class RestoreHealth : public Actor {
+class Ammo : public Goodie {
 public:
-	RestoreHealth(int startx, int starty, StudentWorld* world) : Actor(IID_RESTORE_HEALTH, startx, starty, none, world) {
-
-	}
-};
-
-class Ammo : public Actor {
-public:
-	Ammo(int startx, int starty, StudentWorld* world) : Actor(IID_AMMO, startx, starty, none, world) {
+	Ammo(int startx, int starty, StudentWorld* world, int ID = IID_AMMO) : Goodie(startx, starty, world, ID) {
 
 	}
 };
