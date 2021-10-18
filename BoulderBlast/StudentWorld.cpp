@@ -87,9 +87,9 @@ int StudentWorld::init()
 					break;
 
 				case Level::jewel:
+					this->increaseNumJewels();
 					addActor(new Jewel(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
-					increaseNumJewels();
 					break;
 
 				case Level::restore_health:
@@ -233,5 +233,9 @@ void StudentWorld::reduceNumJewels() {
 
 void StudentWorld::increaseNumJewels() {
 	numJewels++;
+}
+
+int StudentWorld::getNumJewels() {
+	return this->numJewels;
 }
 

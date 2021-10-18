@@ -72,7 +72,16 @@ public:
 	Boulder(int startx, int starty, StudentWorld* world) : Actor(IID_BOULDER, startx, starty, none, world) {
 		this->setAlive();
 		this->setHealth(10);
+		this->usada = false;
 	}
+	void doSomething();
+	void usar();
+	bool getUsada();
+	bool colision(int x, int y);
+	bool puedeMoverse(Direction dir);
+	void moverPiedra(Direction dir);
+private:
+	bool usada = false;
 };
 
 class Bullet : public Actor {
@@ -89,14 +98,18 @@ public:
 class Hole : public Actor {
 public:
 	Hole(int startx, int starty, StudentWorld* world) : Actor(IID_HOLE, startx, starty, none, world) {
-
+		this->llenado = false;
 	}
+	void llenar();
+	bool getLlenado();
+private:
+	bool llenado = false;
 };
 
 class Jewel : public Actor {
 public:
 	Jewel(int startx, int starty, StudentWorld* world) : Actor(IID_JEWEL, startx, starty, none, world) {
-
+		this->recogido = false;
 	}
 	void setRecogido(bool estado);
 	bool getRecogido();
@@ -110,8 +123,10 @@ public:
 		this->setVisible(false);
 		this->accesible = false;
 	}
+	void doSomething();
 	void JoyasRecolectadas();//Hace visible a la salida
 	void JoyasPerdidas();//Vuelve a ocultar a la salida
+	bool getAccesible();
 private:
 	bool accesible = false;
 };

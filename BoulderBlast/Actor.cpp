@@ -53,6 +53,15 @@ void Actor::morir() {
 	this->getWorld()->deleteElement(this);
 }
 
+void Hole::llenar() {
+	this->llenado = true;
+	this->morir();
+}
+
+bool Hole::getLlenado() {
+	return this->llenado;
+}
+
 void Jewel::setRecogido(bool estado) {
 	this->recogido = estado;
 }
@@ -71,13 +80,97 @@ void Exit::JoyasPerdidas() {//Vuelve a oculatr a la salida
 	this->accesible = false;
 }
 
-void Goodie::setRecogido(bool estado) {
+bool Exit::getAccesible() {
+	return this->accesible;
+}
+
+void Exit::doSomething() {
+	if (this->getWorld()->getNumJewels() <= 0) {//Si se recogieron todas la joyas, habilitar la salida
+		this->JoyasRecolectadas();
+	}	
+}
+
+void Goodie::setRecogido(bool estado) {//Definir si se ha recogido o volvió a su lugar de origen si se matoa un kleptobot
 	this->recogido = estado;
 	this->setVisible(!estado);//Debe ser el contrario del estado de recogido
 }
 
 bool Goodie::getRecogido() {
 	return this->recogido;
+}
+
+void Boulder::usar() {
+	this->usada = true;
+	this->morir();//Debe ser removida totalmente
+}
+
+bool Boulder::getUsada() {
+	return this->usada;
+}
+
+void Boulder::moverPiedra(Direction dir) {
+	switch (dir)
+	{
+	case up:
+		this->moveTo(this->getX(), this->getY() + 1);
+		break;
+	case down:
+		this->moveTo(this->getX(), this->getY() - 1);
+		break;
+	case left:
+		this->moveTo(this->getX() - 1, this->getY());
+		break;
+	case right:
+		this->moveTo(this->getX() + 1, this->getY());
+		break;
+	}
+}
+
+bool Boulder::puedeMoverse(Direction dir) {
+	GraphObject* destino = nullptr;
+	switch (dir)
+	{
+	case up:
+		destino = this->getWorld()->getActorByCoordinates(this->getX(), this->getY() + 1);
+		break;
+	case down:
+		destino = this->getWorld()->getActorByCoordinates(this->getX(), this->getY() - 1);
+		break;
+	case left:
+		destino = this->getWorld()->getActorByCoordinates(this->getX() - 1, this->getY());
+		break;
+	case right:
+		destino = this->getWorld()->getActorByCoordinates(this->getX() + 1, this->getY());
+		break;
+	}
+	if (destino == nullptr) {
+		return true;
+	}
+	else if (destino->getID() == 9) {//Hole
+		return true;
+	}
+	else {//En cualquier otro caso la piedra no se puede mover
+		return false;
+	}
+}
+
+bool Boulder::colision(int x, int y) {
+	bool colisiona = true;
+	GraphObject* colision = this->getWorld()->getActorByCoordinates(x, y);
+	if (colision == nullptr) {//No colisiona y ninguna accion es tomada
+		colisiona = false;
+	}else if (colision->getID() == 9) {//Hole, no colisiona y se mete en el hueco, ambos desapareen
+		colisiona = false;
+		dynamic_cast<Hole*>(colision)->llenar();//Llenar hueco
+		this->usar();//Quitar piedra usada
+	}else {//En cualquier otro caso la piedra colisiona y nada pasa
+		colisiona = true;
+	}
+	return colisiona;
+}
+
+void Boulder::doSomething() {
+	this->colision(this->getX(), this->getY());
 }
 
 int Player::getAmmo() {
@@ -109,7 +202,6 @@ void Player::disparar() {
 	}
 }
 
-
 void Player::moveActor(int xDest, int yDest) {
 	Actor* w = nullptr; // El personaje
 	StudentWorld* world = getWorld();
@@ -127,8 +219,30 @@ bool Player::colision(GraphObject* destino) {
 	bool colisiona = true;
 	switch (destino->getID()) {
 	case 5://Bullet
-		this->decreaseHealth(2);
 		colisiona = false;
+		break;
+	case 7://Exit
+		if (dynamic_cast<Exit*>(destino)->getAccesible()) {//Si la salida esta habilitada no colisionar y acabar el juego
+			colisiona = false;
+			this->getWorld()->advanceToNextLevel();
+		}
+		else {//No colisionar pero no acabar el juego, no se gana aun
+			colisiona = false;
+		}
+		break;
+	case 8://Boulder
+		if (!dynamic_cast<Boulder*>(destino)->getUsada()) {//Si no esta usado o recogido, interactuar
+			if (dynamic_cast<Boulder*>(destino)->puedeMoverse(this->getDirection())) {//Moverse y no colisionar si la piedra puede ser movida
+				dynamic_cast<Boulder*>(destino)->moverPiedra(this->getDirection());//Mover la piedra
+				colisiona = false;
+			}
+			else {
+				colisiona = true;//Si la piedra no se puede mover, hay colision
+			}			
+		}
+		else {
+			colisiona = false;//Si ya se uso la piedra, no hay nada con que colisionar
+		}		
 		break;
 	case 10://Jewel
 		if (!dynamic_cast<Jewel*>(destino)->getRecogido()) {
@@ -136,7 +250,7 @@ bool Player::colision(GraphObject* destino) {
 			this->getWorld()->reduceNumJewels();
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			dynamic_cast<Jewel*>(destino)->setRecogido(true);
-		}		
+		}
 		colisiona = false;
 		break;
 	case 11://Health
@@ -145,7 +259,7 @@ bool Player::colision(GraphObject* destino) {
 			this->getWorld()->increaseScore(500);
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			dynamic_cast<RestoreHealth*>(destino)->setRecogido(true);
-		}		
+		}
 		colisiona = false;
 		break;
 	case 12://live
@@ -155,7 +269,7 @@ bool Player::colision(GraphObject* destino) {
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			colisiona = false;
 			dynamic_cast<ExtraLife*>(destino)->setRecogido(true);
-		}		
+		}
 		break;
 	case 13://Ammo
 		if (!dynamic_cast<Ammo*>(destino)->getRecogido()) {
@@ -163,7 +277,7 @@ bool Player::colision(GraphObject* destino) {
 			this->aumentaAmmo(20);
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			dynamic_cast<Ammo*>(destino)->setRecogido(true);
-		}		
+		}
 		colisiona = false;
 		break;
 	default://snarl, kleptos, pared, factory, boulder, hole
@@ -225,33 +339,34 @@ void Player::doSomething() {
 	}
 }
 
-
 void Bullet::moveActor(int xDest, int yDest) {
 	moveTo(xDest, yDest);
 }
 
 void Bullet::doSomething() {
-	if (isAlive()) {	
+	if (isAlive()) {
 		colision(this->getX(), this->getY());
-		Direction direccion = this->getDirection();
-		switch (direccion) {
-		case up:		
-			moveActor(this->getX(), this->getY() + 1);
-			break;
+		if (isAlive()) {//Pudo haber impactado con algo en la colision anterior
+			Direction direccion = this->getDirection();
+			switch (direccion) {
+			case up:
+				moveActor(this->getX(), this->getY() + 1);
+				break;
 
-		case down:	
-			moveActor(this->getX(), this->getY() - 1);			
-			break;
+			case down:
+				moveActor(this->getX(), this->getY() - 1);
+				break;
 
-		case left:			
-			moveActor(this->getX() - 1, this->getY());		
-			break;
+			case left:
+				moveActor(this->getX() - 1, this->getY());
+				break;
 
-		case right:		
-			moveActor(this->getX() + 1, this->getY());			
-			break;
-		}
-		colision(this->getX(), this->getY());
+			case right:
+				moveActor(this->getX() + 1, this->getY());
+				break;
+			}
+			colision(this->getX(), this->getY());
+		}		
 	}
 }
 
@@ -272,7 +387,7 @@ bool Bullet::colision(int x, int y) {
 		case 1://Snarl
 			this->eraseActor();
 			this->alive = false;
-			dynamic_cast<Snarlbot*>(colision)->decreaseHealth(2);	
+			dynamic_cast<Snarlbot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			break;
 		case 2://klepto
@@ -305,12 +420,12 @@ bool Bullet::colision(int x, int y) {
 			colisiona = false;
 			break;
 		}
-	}	
+	}
 	return colisiona;
 }
 
 void Snarlbot::doSomething() {
 	if (isAlive()) {
-		
+
 	}
 }
