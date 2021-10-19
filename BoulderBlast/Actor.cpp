@@ -50,7 +50,7 @@ void Actor::changeDirection(Direction dir) {
 void Actor::morir() {
 	this->eraseActor();
 	this->alive = false;
-	this->getWorld()->deleteElement(this);
+	// this->getWorld()->deleteElement(this);
 }
 
 void Hole::llenar() {
@@ -85,9 +85,14 @@ bool Exit::getAccesible() {
 	return this->accesible;
 }
 
+int i = 0;
 void Exit::doSomething() {
 	if (this->getWorld()->getNumJewels() <= 0) {//Si se recogieron todas la joyas, habilitar la salida
 		this->JoyasRecolectadas();
+		if (i == 0) {
+			this->getWorld()->playSound(SOUND_REVEAL_EXIT);
+			i++;
+		}
 	}	
 }
 
@@ -223,7 +228,7 @@ bool Player::colision(GraphObject* destino) {
 		colisiona = false;
 		break;
 	case 7://Exit
-		if (dynamic_cast<Exit*>(destino)->getAccesible()) {//Si la salida esta habilitada no colisionar y acabar el juego
+		if (dynamic_cast<Exit*>(destino)->getAccesible() == 1) {//Si la salida esta habilitada no colisionar y acabar el juego
 			colisiona = false;
 			this->getWorld()->advanceToNextLevel();
 		}

@@ -23,6 +23,10 @@ int StudentWorld::init()
 		return GWSTATUS_PLAYER_WON;
 	}
 	level << "level" << setfill('0') << setw(2) << getLevel() << ".dat";
+
+	// DEBUG PARA VER QUE .DAT ESTA CARGANDO
+	cout << level.str();
+	
 	Level::LoadResult result = lev.loadLevel(level.str());
 	if (result == Level::load_fail_file_not_found) {
 		return GWSTATUS_PLAYER_WON; // level not found, assume no more levels so player wins!
@@ -144,7 +148,7 @@ int StudentWorld::move()
 			i -= (g - actorVector.size()); // since new object will be at current location
 		}
 	}
-	if (dynamic_cast<Actor*>(getPlayer())->getHealth() == 0) {
+	if (dynamic_cast<Actor*>(getPlayer())->getHealth() <= 0) {
 		goto exit;
 	}
 	if (getBonus() > 0) {
