@@ -153,21 +153,18 @@ class Agent : public Actor
 public:
 	Agent(int imageID, int startX, int startY, StudentWorld* world, Direction dir, unsigned int hitPoints);
 	virtual ~Agent() {}
-	// Move to the adjacent square in the direction the agent is facing
-	// if it is not blocked, and return true.  Return false if the agent
-	// can't move.
+	
 	bool moveIfPossible();
 
-	// agents are able to take damage 
+	// si se daña
 	virtual bool isDamageable() const { return true; }
 
-	// Return true if this agent can push boulders (which means it's the
-	// player).
+	// ver si puede mover o disparar
 	virtual bool needsClearShot() const;
 
-	//agents stop bullets from moving
+	//parar el bullet
 	virtual bool stopsBullet() const { return true; }
-	// agents block player from moving
+	// bloquear el player
 	virtual bool blocksPlayer() const { return true; }
 };
 
@@ -177,21 +174,21 @@ public:
 	Robot(StudentWorld* world, int startX, int startY, int imageID,
 		unsigned int hitPoints, unsigned int score, Direction startDir);
 	virtual ~Robot() {}
-	// robots are unable to push boulders
+	// no se mueva el boulder
 	virtual bool canPushBoulders() const { return false; }
-	// used to determine whether robot is allowed to shoot
+
 	virtual bool needsClearShot();
 
-	// used to play sound when damaged
+	//sonido cuando muere
 	virtual bool isDamageable() const;
 
-	//checks to see whether it can move due to tick system
+
 	bool isItTime();
 
-	// used to play death sound when dead
+
 	virtual void damage(int damageAmt);
 
-	// used to obtain private data member m_score
+
 	virtual int getScore() { return m_score; }
 private:
 	int m_score;
@@ -215,31 +212,31 @@ public:
 		unsigned int hitPoints, unsigned int score);
 	virtual ~KleptoBot() {}
 
-	// used when factory does its census
+
 	virtual bool countsInFactoryCensus() const { return true; }
 
-	// increment turns tick
+
 	void incTurn() { m_turns++; }
 
-	// turns left before can act
+	
 	int turnsLeft() { return m_turns; }
 
 	// return private data member m_distanceBeforeTurning
 	int distanceBeforeTurning() { return m_distanceBeforeTurning; }
 
-	// create new random distance before turning
+	// create new random distance 
 	void setNewDistanceBeforeTurning(int a) { m_distanceBeforeTurning = a; }
 
-	// sets a random direction
+	//random direction
 	void setRandomDirection(int times);
 
-	// sets m_turns back to 0 to restart cycle
+	
 	void resetTurns() { m_turns = 0; }
 
-	// retrieves pointer to private data member Goodie since each KleptoBot may have a Goodie
+	
 	Goodie* myGoodie() { return m_goodie; }
 
-	// set Kleptobot m_goodie value
+	// valor de vida del goodie
 	void setGoodie(Goodie* a) { m_goodie = a; }
 private:
 	Goodie* m_goodie;
@@ -253,10 +250,10 @@ public:
 	RegularKleptoBot(StudentWorld* world, int startX, int startY);
 	virtual ~RegularKleptoBot() {}
 
-	// has its own original behavior
+	
 	virtual void doSomething();
 
-	// special case since RegularKleptoBot can carry goodie 
+	// puede llevar los goodies
 	virtual void damage(int damageAmt);
 };
 
@@ -266,10 +263,10 @@ public:
 	AngryKleptoBot(StudentWorld* world, int startX, int startY);
 	virtual ~AngryKleptoBot() {}
 
-	// has RegularKleptoBot's but also tries to shoot
+	//disparar
 	virtual void doSomething();
 
-	// used to place goodies down if dead
+	// para poner dejar el goodie donde muera 
 	virtual void damage(int damageAmt);
 };
 
@@ -281,16 +278,16 @@ public:
 	KleptoBotFactory(StudentWorld* world, int startX, int startY, ProductType type);
 	virtual ~KleptoBotFactory() {}
 
-	// create KleptoBots
+	// crear kleptobots
 	virtual void doSomething();
 
-	// blocks bullets from continuing
+
 	virtual bool stopsBullet() const { return true; }
 
-	// returns private data member m_productType
+	// returna que  IIDD es 
 	ProductType getProductType() { return m_productType; }
 
-	// does not allow to re-step onto factory
+
 	virtual bool allowsAgentColocation() const { return false; }
 private:
 	int m_count;
