@@ -116,6 +116,7 @@ bool Goodie::getRecogido() {
 void Boulder::usar() {
 	this->usada = true;
 	this->morir();//Debe ser removida totalmente
+	this->getWorld()->deleteElement(this);
 }
 
 bool Boulder::getUsada() {
@@ -379,13 +380,14 @@ void Bullet::doSomething() {
 				moveActor(this->getX() + 1, this->getY());
 				break;
 			}
+
 			colision(this->getX(), this->getY());
 		}		
 	}
 }
 
 bool Bullet::colision(int x, int y) {
-	bool colisiona = false;
+	bool colisiona = true;
 	GraphObject* colision = this->getWorld()->getActorByCoordinates(x, y);
 	if (colision == nullptr) {
 		colisiona = false;
@@ -393,28 +395,28 @@ bool Bullet::colision(int x, int y) {
 	else {
 		switch (colision->getID()) {
 		case 0://Player
-			this->eraseActor();
-			this->alive = false;
 			dynamic_cast<Player*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
+			this->eraseActor();
+			this->alive = false;
 			break;
 		case 1://Snarl
-			this->eraseActor();
-			this->alive = false;
 			dynamic_cast<Snarlbot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
+			this->eraseActor();
+			this->alive = false;
 			break;
 		case 2://klepto
-			this->eraseActor();
-			this->alive = false;
 			dynamic_cast<Kleptobot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
-			break;
-		case 3://Angry klepto
 			this->eraseActor();
 			this->alive = false;
+			break;
+		case 3://Angry klepto
 			dynamic_cast<AngryKleptobot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
+			this->eraseActor();
+			this->alive = false;
 			break;
 		case 4://Factory
 			this->eraseActor();
@@ -425,9 +427,9 @@ bool Bullet::colision(int x, int y) {
 			this->alive = false;
 			break;
 		case 8://Boulder
+			dynamic_cast<Boulder*>(colision)->decreaseHealth(2);
 			this->eraseActor();
 			this->alive = false;
-			dynamic_cast<Boulder*>(colision)->decreaseHealth(2);
 			break;
 		default://cuadro vacio u otra bala
 			//Sigue viajando
