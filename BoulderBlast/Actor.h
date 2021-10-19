@@ -20,13 +20,9 @@ public:
 	void eraseActor();
 	void setAlive();
 	bool isAlive();
-	virtual bool isDead() const;
-	virtual void setDead();
-	void fireBullet();
 	void setHealth(int health);
 	int getHealth();
 	void morir();
-	std::string whoAmI() const;
 	StudentWorld* getWorld() {
 		return this->world;
 	}
@@ -34,7 +30,6 @@ public:
 	void changeDirection(Direction dir);
 	virtual void moveActor(Actor* actor, int xDest, int yDest, Actor* actors[VIEW_WIDTH][VIEW_HEIGHT]) {};
 	virtual void doSomething() {};
-	//virtual bool blocksPlayer(Direction dir) = 0;
 private:
 	StudentWorld* world;
 	int health;// = -1; // default value.
@@ -152,93 +147,14 @@ public:
 
 	}
 };
-//intento 2 robot 
-class Robot : public Actor
-{
-public:
-	Robot(int graphicId, int startx, int starty, Direction dir, int health,  int level, StudentWorld* world);
-	virtual bool blocksPlayer(Direction dir);
-	virtual bool damagedByBullet();
-	virtual bool canDoSomething();
-	virtual bool isBlocked(Direction dir);
-	virtual bool canShoot(Direction dir);
-	virtual void addPuntaje() = 0;
-	virtual ~Robot();
-
-private:
-	int m_ticksMax;
-	int m_health;
-	int m_tickContador;
-};
-class SnarlBot : public Robot
-{
-public:
-	SnarlBot(int graphicId, int startx, int starty, Direction dir, int level, StudentWorld* world);
-	virtual void cambiarDir(Direction dir);
-	virtual void addPuntaje();
-	virtual ~SnarlBot();
-};
-
-class HorizontalBot : public SnarlBot
-{
-public:
-	 HorizontalBot(int graphicId, int startx, int starty, int level, StudentWorld* world);
-	virtual void doSomething();
-	virtual ~HorizontalBot();
-};
-
-class VerticalBot : public SnarlBot
-{
-public:
-	VerticalBot(int graphicId, int startx, int starty, int level, StudentWorld* world);
-	virtual void doSomething();
-	virtual ~VerticalBot();
-};
-class KleptoBotFactory : public Actor
-{
-public:
-	KleptoBotFactory(int imageID, int startX, int startY, std::string whatToProduce, StudentWorld* world);
-	virtual void doSomething();
-	virtual bool blocksPlayer(Direction dir);
-	virtual bool damagedByBullet();
-	virtual int canIProduce();
-	virtual ~KleptoBotFactory();
-private:
-	std::string m_produce;
-	bool produced;
-};
-class KleptoBot : public Robot
-{
-public:
-	KleptoBot(int imageID, int startX, int startY, int level, int healthOfBot, std::string name, StudentWorld* world);
-	virtual void addPuntaje();
-	virtual void doSomething();
-	virtual void setDead();
-	virtual ~KleptoBot();
-private:
-	void determineDirection(Direction dir);
-	void changeDirection();
-	int m_health;
-	bool m_hasPickedUpItem;
-	int m_distanceToMove;
-	std::string whatAmIHolding;
-
-};
-class AngryKleptoBot : public KleptoBot
-{
-public:
-	AngryKleptoBot(int imageID, int startX, int startY, int level, int healthOfBot, std::string name, StudentWorld* world);
-	virtual void addScore();
-	virtual ~AngryKleptoBot();
-};
 //robot
-/*class Agent : public Actor
+class Agent : public Actor
 {
 public:
 	Agent(int imageID, int startX, int startY, StudentWorld* world, Direction dir, unsigned int hitPoints);
 	virtual ~Agent() {}
 	
-	bool moveIfPossible
+	bool moveIfPossible();
 
 	// si se daña
 	virtual bool isDamageable() const { return true; }
@@ -376,5 +292,5 @@ public:
 private:
 	int m_count;
 	ProductType m_productType;
-};*/
+};
 #endif // ACTOR_H_

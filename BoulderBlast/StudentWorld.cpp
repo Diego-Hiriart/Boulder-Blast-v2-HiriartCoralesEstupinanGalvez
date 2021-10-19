@@ -19,7 +19,6 @@ int StudentWorld::init()
 	Level lev(assetDirectory());
 	std::stringstream level;
 	level.str(std::string());
-
 	if (getLevel() > 0) { // if completed level 99 then end game
 		return GWSTATUS_PLAYER_WON;
 	}
@@ -58,22 +57,22 @@ int StudentWorld::init()
 					break;
 
 				case Level::horiz_snarlbot:
-					addActor(new HorizontalBot(IID_SNARLBOT, x, y, getLevel(), this));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::right));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::vert_snarlbot:
-					addActor(new VerticalBot(IID_SNARLBOT,x, y,getLevel(), this /*GraphObject::Direction::down)*/));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::down));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::kleptobot_factory:
-					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "KleptoBot", this));
+					addActor(new KleptobotFactory(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::angry_kleptobot_factory:
-					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "Angry KleptoBot", this));
+					addActor(new AngryKleptobotFactory(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
