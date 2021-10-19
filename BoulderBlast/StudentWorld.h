@@ -22,6 +22,8 @@ public:
 	}
 
 	virtual int init();
+	//Actor* getActorDamagedByBulletAt(int x, int y, Actor* actor);
+	//Actor* getGoodieAt(int x, int y, Actor* act);
 	/*{
 		return GWSTATUS_CONTINUE_GAME;
 	}*/

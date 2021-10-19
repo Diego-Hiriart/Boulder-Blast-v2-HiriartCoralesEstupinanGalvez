@@ -15,6 +15,8 @@ const string assetDirectory = "Assets";//Parte del path para leer los niveles, s
 
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 /* METHODS FOR Actor CLASS*/
+
+
 void Actor::showActor() {
 	(*this).setVisible(true);
 }
@@ -94,6 +96,7 @@ void Player::disparar() {
 		switch (direccion) {
 		case up:
 			this->getWorld()->addActor(new Bullet(this->getX(), this->getY() + 1, this->getWorld(), direccion));
+
 			break;
 
 		case down:
@@ -312,215 +315,613 @@ bool Bullet::colision(int x, int y) {
 	}	
 	return colisiona;
 }
-void Robot::damage(int damageAmt)
+
+//intento 2
+Robot::Robot(int graphicId, int startx, int starty, Direction dir,int health, int level, StudentWorld* world)
+	:Actor(graphicId, startx, starty, dir, world)
 {
-	Actor::damage(damageAmt);							// plays robot die sound if dead
-	if (getHealth() <= 0)
-		getWorld()->playSound(SOUND_ROBOT_DIE);
+	setVisible(true);
+	m_ticksMax = (28 - level) / 4;
+	m_tickContador = 1;
+	m_health = health;
 }
-
-// SNARLBOT
-
-SnarlBot::SnarlBot(StudentWorld* world, int startX, int startY, Direction startDir) : Robot(world, startX, startY, IID_SNARLBOT, 10, 100, startDir)
-{
+bool Robot::blocksPlayer(Direction dir) { //bloquear para que el jugador no pueda avanzar
+	return true;
 }
-
-void SnarlBot::doSomething()
+bool Robot::damagedByBullet() //cuando el jugar le dispara al robot
 {
-	if (isItTime())										
+	m_health -= 2;
+	getWorld()->playSound(SOUND_ROBOT_IMPACT);
+	if (m_health <= 0)
 	{
-		if (needsClearShot())							
-		{
-			getWorld()->playSound(SOUND_ENEMY_FIRE);
-			//getWorld()->colisiona(this);
-			
-		}
-		else if (!(moveIfPossible()))					// tries to move but can not so reverses direction and tries to shoot + move
-		{
-			if (getDirection() == right)
-			{
-				setDirection(left);
-				if (!needsClearShot())
-					moveIfPossible();
-			}
-			else if (getDirection() == left)
-			{
-				setDirection(right);
-				if (!needsClearShot())
-					moveIfPossible();
-			}
-			else if (getDirection() == up)
-			{
-				setDirection(down);
-				if (!needsClearShot())
-					moveIfPossible();
-			}
-			else if (getDirection() == down)
-			{
-				setDirection(up);
-				if (!needsClearShot())
-					moveIfPossible();
-			}
-		}
+		getWorld()->playSound(SOUND_ROBOT_DIE);
+		addPuntaje();
+		morir();
+	}
+	return true;
+}
+
+bool Robot::canDoSomething() //mientras el tick sea 1 el robot puede realizar diferentes acciones
+{
+	if (m_tickContador == m_ticksMax)
+	{
+		m_tickContador = 1;
+		return true;
+	}
+	else 
+	{
+		m_tickContador++;
+		return false;
 	}
 }
 
-// KLEPTOBOT
-
-KleptoBot::KleptoBot(StudentWorld* world, int startX, int startY, int imageID,
-	unsigned int hitPoints, unsigned int score) : Robot(world, startX, startY, imageID, hitPoints, score, right)
+bool Robot::isBlocked(Direction dir) //si esta bloqueado va a cambiar la direction del robot
 {
-	m_distanceBeforeTurning = (rand() % 6) + 1;
-	m_goodie = nullptr;
-	m_turns = 0;
+	switch (dir)
+	{
+	case up:
+		if (getWorld()->getActorByCoordinates(getX(), getY() + 1) == nullptr)
+		{
+			return false;
+		}
+		else 
+		
+			return true;
+		break;
+	case down:
+		if(getWorld()->getActorByCoordinates(getX(), getY() -1) == nullptr)
+		{
+			return false;
+		}
+		else
+
+		return true;
+		break;
+	case left:
+		if(getWorld()->getActorByCoordinates(getX()-1, getY()) == nullptr)
+		{
+			return false;
+		}
+		else
+
+		return true;
+		break;
+	case right:
+		if (getWorld()->getActorByCoordinates(getX() + 1, getY()) == nullptr)
+		{
+			return false;
+		}
+		else
+
+			return true;
+		break;
+	default:
+		return true;
+	}
+	return true;
+}
+Robot::~Robot() //declaracion del robot y su virtual 
+{
+
 }
 
-void KleptoBot::setRandomDirection(int times)
+//SNARLBOT
+
+SnarlBot::SnarlBot(int graphicId, int startx, int starty, Direction dir, int level, StudentWorld* world)
+:Robot(graphicId, startx, starty, dir, 10, level, world) 
 {
-	int i = rand() % times;
-	switch (i)
+
+}
+
+SnarlBot::~SnarlBot() {}
+
+void SnarlBot::cambiarDir(Direction dir)  //cambiar direcion mientras se mueve
+{
+	switch (dir)
 	{
-	case 1:
-		setDirection(left);
-		break;
-	case 2:
-		setDirection(right);
-		break;
-	case 3:
-		setDirection(up);
-		break;
-	case 4:
+	case up:
 		setDirection(down);
 		break;
+	case down:
+		setDirection(up);
+		break;
+	case left:
+		setDirection(right);
+		break;
+	case right:
+		setDirection(left);
+		break;
+	default:
+		return;
 	}
 }
-// REGULAR KLEPTOBOT
 
-RegularKleptoBot::RegularKleptoBot(StudentWorld* world, int startX, int startY) : KleptoBot(world, startX, startY, IID_KLEPTOBOT, 5, 10)
+void SnarlBot::addPuntaje()
 {
+	getWorld()->increaseScore(100);
+}
+//HORIZONATAL BOT
+
+HorizontalBot::HorizontalBot(int graphicId, int startx, int starty, int level, StudentWorld* world)
+	:SnarlBot(graphicId, startx, starty, right,level, world) 
+{
+
+}
+void HorizontalBot::doSomething() 
+{
+	if (isDead()) {
+		return;
+	}
+	if (canDoSomething() == false)
+		return;
+	if (canShoot(getDirection()))
+	{
+		fireBullet();
+		getWorld()->playSound(SOUND_ENEMY_FIRE);
+		return;
+	}
+	if (isBlocked(getDirection())) //si esta bloqueado va a cambiar de direccion
+	{
+		cambiarDir(getDirection());
+	}
+	else 
+	{
+		if (getDirection() == right)
+		{
+			moveTo(getX() + 1, getY());
+		}
+		if (getDirection() == left)
+		{
+			moveTo(getX() - 1, getY());
+		}
+	
+	}
+}
+HorizontalBot::~HorizontalBot(){}
+
+//vertical snarlbot
+VerticalBot::VerticalBot(int imageID, int startX, int startY, int level, StudentWorld* world)
+	:SnarlBot(imageID, startX, startY, up, level, world)
+{
+
 }
 
-void RegularKleptoBot::doSomething()
+void VerticalBot::doSomething() //parecido al horizontalbot 
 {
-	if (!isAlive())
-		return;
-	if (isItTime())
-	{
-		Actor* a = getActorByCoordinates(getX(), getY());			// check list from beginning since goodies are placed in front
-		if (a->esRecogido() && myGoodie() == nullptr)			// only steal if does not have a goodie and the actor is a goodie
-		{
-			if ((rand() % 10) == 1)								// random chance to steal
-			{
-				setGoodie(dynamic_cast<Goodie*>(a));
-				//a->~GraphObject(Goodie);									//makes it so that goodie doesn't do anything anymore while its stolen
-				getWorld()->playSound(SOUND_ROBOT_MUNCH);
-				a->setVisible(false);							// hides the goodie
-				return;
-			}
-		}
-		if (turnsLeft() < distanceBeforeTurning() && moveIfPossible())	// try to move if there are still turns left
-		{
-			incTurn();
-		}
-		else
-		{
-			setNewDistanceBeforeTurning((rand() % 6) + 1);				// set new random distance and reset values
-			resetTurns();
 
-			for (int i = 4; i > 0; i--)									// keep setting random direction until it can move
+
+	if (isDead())
+		return;
+	if (canDoSomething() == false)
+		return;
+	if (canShoot(getDirection()))
+	{
+		fireBullet();
+		getWorld()->playSound(SOUND_ENEMY_FIRE);
+		return;
+	}
+	if (isBlocked(getDirection()))
+	{
+		cambiarDir(getDirection());
+	}
+	else
+	{
+		if (getDirection() == up)
+		{
+			moveTo(getX(), getY() + 1);
+		}
+		if (getDirection() == down)
+		{
+			moveTo(getX(), getY() - 1);
+		}
+	}
+}
+
+VerticalBot::~VerticalBot()
+{
+
+}
+
+//Kleptobot factory
+
+KleptoBotFactory::KleptoBotFactory(int imageID, int startX, int startY, string whatToProduce, StudentWorld* world)
+	:Actor(imageID, startX, startY, none, world)
+{
+	setVisible(true);
+	m_produce = whatToProduce; //producir kleptobots
+	produced = false;
+}
+
+int KleptoBotFactory::canIProduce() {
+	int count = 0;
+	for (int x = getX() - 3; x <= getX() + 3; x++)
+	{
+		if (x >= 0 && x < 15)
+		{
+			for (int y = getY() - 3; y <= getY() + 3; y++)
 			{
-				setRandomDirection(i);
-				if (moveIfPossible())
+				if (y >= 0 && y < 15)
 				{
-					incTurn();
-					break;
+					Actor* temp = getWorld()->getActorDamagedByBulletAt(x, y,this); //delclarado en StudentWorld.h
+					
+					if (temp != nullptr && (temp->whoAmI() == "KleptoBot" || temp->whoAmI() == "Angry KleptoBot")) //detectar que tipo de kleptobot es
+						count++;
 				}
+
 			}
-
 		}
 	}
+	return count;
 }
-
-void RegularKleptoBot::damage(int damageAmt)
+void KleptoBotFactory::doSomething() //ERROR EN GETACTORDAMAGE
 {
-	Robot::damage(damageAmt);
-	if (getScore() <= 0)						// drop goodie if stole at current location when dead
+
+
+	if (canIProduce() < 3)
 	{
-		if (myGoodie() != nullptr)
+		Actor* temp = getWorld()->getActorDamagedByBulletAt(getX(), getY(), this);
+		if (temp != nullptr && (temp->whoAmI() == "KleptoBot" || temp->whoAmI() == "Angry KleptoBot"))
+			return;
+		int random = rand() % 50 + 1;
+		if (random == 1)
 		{
-			myGoodie()->setVisible(true);
-			//myGoodie()->notStolen();
-			myGoodie()->moveTo(getX(), getY());
+			getWorld()->playSound(SOUND_ROBOT_BORN);
+			if (m_produce == "KleptoBot")
+				getWorld()->addActor(new KleptoBot(IID_KLEPTOBOT, getX(), getY(), getWorld()->getLevel(), 5, "KleptoBot", getWorld()));//obtiene el ID DE CADA KLEPTOBOT
+			else if (m_produce == "Angry KleptoBot")
+			{
+				getWorld()->addActor(new AngryKleptoBot(IID_KLEPTOBOT, getX(), getY(), getWorld()->getLevel(), 8, "Angry KleptoBot", getWorld()));
+			}
+			produced = true;
 		}
 	}
 }
 
-//ANGRYKLEPTOBOT
-
-AngryKleptoBot::AngryKleptoBot(StudentWorld* world, int startX, int startY) : KleptoBot(world, startX, startY, IID_ANGRY_KLEPTOBOT, 8, 20)
+bool KleptoBotFactory::blocksPlayer(Direction dir)//Bloquea al jugador 
 {
+	return true;
 }
 
-void AngryKleptoBot::doSomething()
+bool KleptoBotFactory::damagedByBullet() {
+	return true;
+}
+
+KleptoBotFactory::~KleptoBotFactory() {}
+
+KleptoBot::KleptoBot(int imageID, int x, int y, int level, int healthOfBot, string name, StudentWorld* world)
+	:Robot(imageID, x, y, right, healthOfBot, level, world)
 {
-	if (!isAlive())
+	setVisible(true);
+	m_hasPickedUpItem = false;
+	m_distanceToMove = rand() % 6 + 1;
+	whatAmIHolding = "";
+}
+void KleptoBot::doSomething()
+{
+	if (isDead())
 		return;
-	if (isItTime())							// checks to see if it is allowed to act
+	if (canDoSomething() == false)
+		return;
+	if (whoAmI() == "Angry KleptoBot")
 	{
-		if (needsClearShot())				// shoot if clear shot towards player
+		if (canShoot(getDirection()))
 		{
+			fireBullet();
 			getWorld()->playSound(SOUND_ENEMY_FIRE);
-			//getWorld()->getPlayer(this);
 			return;
 		}
-		Actor* a = getDirection(getX(), getY());
-		if (a->isStealable() && myGoodie() == nullptr)			// same as regularkleptobot
+	}
+	Actor* temp = getWorld()->getGoodieAt(getX(), getY(), this);//declarado en StudentWorld.h
+	if (temp != nullptr)
+	{
+		string whatIsIt = temp->whoAmI();
+		if (m_hasPickedUpItem == false && (whatIsIt == "Health" || whatIsIt == "ExtraLife" || whatIsIt == "Ammunition"))
 		{
-			if ((rand() % 10) == 1)
+			int random = rand() % 10 + 1;
+			if (random == 1)
 			{
-				setGoodie(dynamic_cast<Goodie*>(a));
-				//a->esRecogido();
 				getWorld()->playSound(SOUND_ROBOT_MUNCH);
-				a->setVisible(false);
-				return;
+				m_hasPickedUpItem = true;
+				whatAmIHolding = whatIsIt;
+				temp->setDead();
 			}
 		}
-		if (turnsLeft() < distanceBeforeTurning() && moveIfPossible())
+	}
+	if (m_distanceToMove > 0 && !isBlocked(getDirection()))
+	{
+		m_distanceToMove--;
+		switch (getDirection())
 		{
-			incTurn();
+		case up:
+			moveTo(getX(), getY() + 1);
+			break;
+		case down:
+			moveTo(getX(), getY() - 1);
+			break;
+		case left:
+			moveTo(getX() - 1, getY());
+			break;
+		case right:
+			moveTo(getX() + 1, getY());
+			break;
+		default:
+			break;
+		}
+	}
+	else
+	{
+		m_distanceToMove = rand() % 6 + 1;
+		changeDirection();
+		if (!isBlocked(getDirection()))
+		{
+			m_distanceToMove--;
+			switch (getDirection())
+			{
+			case up:
+				moveTo(getX(), getY() + 1);
+				break;
+			case down:
+				moveTo(getX(), getY() - 1);
+				break;
+			case left:
+				moveTo(getX() - 1, getY());
+				break;
+			case right:
+				moveTo(getX() + 1, getY());
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
+
+}
+void KleptoBot::changeDirection() { //cambia la direccion de manera aleatoria 
+	int randomDirection = rand() % 4 + 1;
+	switch (randomDirection)
+	{
+	case 1:
+		determineDirection(up);
+		break;
+	case 2:
+		determineDirection(down);
+		break;
+	case 3:
+		determineDirection(right);
+		break;
+	case 4:
+		determineDirection(left);
+		break;
+	default:
+		cerr << "error en num random" << endl;
+		break;
+
+	}
+}
+void KleptoBot::determineDirection(Direction dir)
+{
+
+
+	Direction curr = dir;
+	if (dir == up)
+	{
+		if (!isBlocked(up))
+		{
+			setDirection(up);
+		}
+		else if (!isBlocked(down))
+		{
+			setDirection(down);
+		}
+		else if (!isBlocked(left))
+		{
+			setDirection(left);
+		}
+		else if (!isBlocked(right))
+		{
+			setDirection(right);
 		}
 		else
+			setDirection(curr);
+		return;
+	}
+	else if (dir == down)
+	{
+		if (!isBlocked(down))
 		{
-			setNewDistanceBeforeTurning(rand() % 6 + 1);
-			resetTurns();
+			setDirection(down);
+		}
+		else if (!isBlocked(up))
+		{
+			setDirection(up);
+		}
+		else if (!isBlocked(left))
+		{
+			setDirection(left);
+		}
+		else if (!isBlocked(right))
+		{
+			setDirection(right);
+		}
+		else
+			setDirection(curr);
+		return;
+	}
+	else if (dir == right)
+	{
+		if (!isBlocked(right))
+		{
+			setDirection(right);
+		}
+		else if (!isBlocked(up))
+		{
+			setDirection(up);
+		}
+		else if (!isBlocked(left))
+		{
+			setDirection(left);
+		}
+		else if (!isBlocked(down))
+		{
+			setDirection(down);
+		}
+		else
+			setDirection(curr);
+		return;
 
-			for (int i = 4; i > 0; i--)
+	}
+	else if (dir == left)
+	{
+		if (!isBlocked(left))
+		{
+			setDirection(left);
+		}
+		else if (!isBlocked(up))
+		{
+			setDirection(up);
+		}
+		else if (!isBlocked(right))
+		{
+			setDirection(right);
+		}
+		else if (!isBlocked(down))
+		{
+			setDirection(down);
+		}
+		else
+			setDirection(curr);
+		return;
+
+	}
+	else
+	{
+		cerr << "error" << endl;
+	}
+
+}
+
+void KleptoBot::setDead()
+{
+
+	// cuadno el robot muere se crea un goodie o se deja el goodie en la posicion que murio
+
+	if (whatAmIHolding == "ExtraLife")
+		getWorld()->addActor(new ExtraLife(getX(), getY(), getWorld()));
+	else if (whatAmIHolding == "Ammunition")
+		getWorld()->addActor(new Ammo(getX(), getY(), getWorld()));
+	else if (whatAmIHolding == "Health")
+		getWorld()->addActor(new RestoreHealth(getX(), getY(), getWorld()));
+	Actor::setDead();
+
+}
+
+void KleptoBot::addPuntaje()
+{
+	getWorld()->increaseScore(10); //puntaje con el que empiezan 
+}
+
+KleptoBot::~KleptoBot()//declaracion
+{
+
+}
+
+//Angry
+
+AngryKleptoBot::AngryKleptoBot(int imageID, int x, int y, int level, int healthOfBot, string name, StudentWorld* world)
+	:KleptoBot(imageID, x, y, level, healthOfBot, name, world)
+{
+
+}
+
+void AngryKleptoBot::addScore()
+{
+	getWorld()->increaseScore(20);
+}
+
+AngryKleptoBot::~AngryKleptoBot()
+{
+
+}
+
+/*bool Robot::canShoot(Direction dir)
+{
+	if (dir == up)
+	{
+		for (int y = getY(); y < 15;y++)
+		{
+			Actor* temp = getWorld()->getActorByCoordinates(getX(), y);
+			if (temp != nullptr)
 			{
-				setRandomDirection(i);
-				if (moveIfPossible())
+				if (temp->morir() == false)
 				{
-					incTurn();
-					break;
+					if (temp->whoAmI() == "Player")
+						return true;
+					else
+						return false;
 				}
 			}
 
 		}
 	}
-}
-
-void AngryKleptoBot::damage(int damageAmt)
-{
-	Robot::damage(damageAmt);
-	if (getHealth() <= 0)
+	else if (dir == down)
 	{
-		if (myGoodie() != nullptr)					// drop current goodie if have at current location when dead
+		for (int y = getY(); y >= 0; y--)
 		{
-			myGoodie()->setVisible(true);
-			myGoodie()->getRecogido();
-			myGoodie()->moveTo(getX(), getY());
+			Actor* temp = getWorld()->getActorByCoordinates(getX(), y);
+			if (temp != nullptr)
+			{
+				if (temp->isDead() == false)
+				{
+					if (temp->whoAmI() == "Player")
+						return true;
+					else
+						return false;
+				}
+			}
+
+		}
+
+	}
+	else if (dir == left)
+	{
+		for (int x = getX(); x >= 0; x--)
+		{
+			Actor* temp = getWorld()->getActorDamagedByBulletAt(x, getY(), this);
+			if (temp != nullptr)
+			{
+				if (temp->isDead() == false)
+				{
+					if (temp->whoAmI() == "Player")
+					{
+						return true;
+					}
+					else
+						return false;
+				}
+			}
 		}
 	}
-}
+	else if (dir == right)
+	{
+		for (int x = getX(); x < 15; x++)
+		{
+			Actor* temp = getWorld()->getActorByCoordinates(x, getY());
+			if (temp != nullptr)
+			{
+				if (temp->morir() == false)
+				{
+					if (temp->showActor) == "Player")
+						return true;
+					else
+						return false;
+				}
+			}
+		}
+	}
+	return false;
+}*/
+
 
 
 
