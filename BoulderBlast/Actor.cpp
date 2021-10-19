@@ -55,6 +55,7 @@ void Actor::morir() {
 void Hole::llenar() {
 	this->llenado = true;
 	this->morir();
+	this->getWorld()->deleteElement(this);
 }
 
 bool Hole::getLlenado() {
