@@ -5,6 +5,10 @@
 #include "StudentWorld.h"
 #include "GameController.h"
 #include "GameWorld.h"
+#include <algorithm>
+
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
 using namespace std;
 
 const string assetDirectory = "Assets";//Parte del path para leer los niveles, salio de main.cpp
@@ -272,19 +276,19 @@ bool Bullet::colision(int x, int y) {
 		case 1://Snarl
 			this->eraseActor();
 			this->alive = false;
-			dynamic_cast<Snarlbot*>(colision)->decreaseHealth(2);	
+			dynamic_cast<SnarlBot*>(colision)->decreaseHealth(2);	
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			break;
 		case 2://klepto
 			this->eraseActor();
 			this->alive = false;
-			dynamic_cast<Kleptobot*>(colision)->decreaseHealth(2);
+			dynamic_cast<KleptoBot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			break;
 		case 3://Angry klepto
 			this->eraseActor();
 			this->alive = false;
-			dynamic_cast<AngryKleptobot*>(colision)->decreaseHealth(2);
+			dynamic_cast<AngryKleptoBot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			break;
 		case 4://Factory
@@ -308,319 +312,215 @@ bool Bullet::colision(int x, int y) {
 	}	
 	return colisiona;
 }
-
-
-
-//crea la clase Robot -de-
-Robot::Robot(StudentWorl* swd, int ID, int x, int y, int health Direction d, int bonus)
-	:Agent(swd, ID, x, y, health, SOUND_ENEMY_FIRE, d), m_bonus(bonus), m_continue(false)
+void Robot::damage(int damageAmt)
 {
-	setTick();
-}void Robot::doSomething() {
-	m_continue = false;
+	Actor::damage(damageAmt);							// plays robot die sound if dead
+	if (getHealth() <= 0)
+		getWorld()->playSound(SOUND_ROBOT_DIE);
+}
+
+// SNARLBOT
+
+SnarlBot::SnarlBot(StudentWorld* world, int startX, int startY, Direction startDir) : Robot(world, startX, startY, IID_SNARLBOT, 10, 100, startDir)
+{
+}
+
+void SnarlBot::doSomething()
+{
+	if (isItTime())										
+	{
+		if (needsClearShot())							
+		{
+			getWorld()->playSound(SOUND_ENEMY_FIRE);
+			//getWorld()->colisiona(this);
+			
+		}
+		else if (!(moveIfPossible()))					// tries to move but can not so reverses direction and tries to shoot + move
+		{
+			if (getDirection() == right)
+			{
+				setDirection(left);
+				if (!needsClearShot())
+					moveIfPossible();
+			}
+			else if (getDirection() == left)
+			{
+				setDirection(right);
+				if (!needsClearShot())
+					moveIfPossible();
+			}
+			else if (getDirection() == up)
+			{
+				setDirection(down);
+				if (!needsClearShot())
+					moveIfPossible();
+			}
+			else if (getDirection() == down)
+			{
+				setDirection(up);
+				if (!needsClearShot())
+					moveIfPossible();
+			}
+		}
+	}
+}
+
+// KLEPTOBOT
+
+KleptoBot::KleptoBot(StudentWorld* world, int startX, int startY, int imageID,
+	unsigned int hitPoints, unsigned int score) : Robot(world, startX, startY, imageID, hitPoints, score, right)
+{
+	m_distanceBeforeTurning = (rand() % 6) + 1;
+	m_goodie = nullptr;
+	m_turns = 0;
+}
+
+void KleptoBot::setRandomDirection(int times)
+{
+	int i = rand() % times;
+	switch (i)
+	{
+	case 1:
+		setDirection(left);
+		break;
+	case 2:
+		setDirection(right);
+		break;
+	case 3:
+		setDirection(up);
+		break;
+	case 4:
+		setDirection(down);
+		break;
+	}
+}
+// REGULAR KLEPTOBOT
+
+RegularKleptoBot::RegularKleptoBot(StudentWorld* world, int startX, int startY) : KleptoBot(world, startX, startY, IID_KLEPTOBOT, 5, 10)
+{
+}
+
+void RegularKleptoBot::doSomething()
+{
 	if (!isAlive())
 		return;
-	if (m_tick != 1)//solo se puede hacer uno por trick
+	if (isItTime())
 	{
-		decTrick();
-		return;
-	}
-
-	if (doesShoot() && canAim())//se dispara y si esta frente al jugadir
-	{
-		shoot();
-		setTick();
-		return;
-	}
-	m_continue = true;
-}
-
-void Robot::doDamage()
-{
-	Actor::doDamage();
-	if (isAlive())
-		getWorld()->playSound(SOUND_ROBOT_IMPACT);
-	else {
-		getWorld()->playSound(SOUND_ROBOT_DIE);
-		getWorld()->increaseScore(m_bonus);
-	}
-}
-bool Robot::canAim() //usado para ver si el robot puede disparar al jugador
-{
-	if (getWorld()->getPlayer()->getX() == getX())
-	{
-		if (getWorld()->getPlayer()->getY() > getY() && getDirection() == up)
+		Actor* a = getActorByCoordinates(getX(), getY());			// check list from beginning since goodies are placed in front
+		if (a->esRecogido() && myGoodie() == nullptr)			// only steal if does not have a goodie and the actor is a goodie
 		{
-			for (int k = 1; k < getWorld()->getPlayer()->getY() - getY(); k++)
+			if ((rand() % 10) == 1)								// random chance to steal
 			{
-				if (getWorld()->spaceContains(getX(), getY() + k) != nullptr)
-				{
-					if (getWorld()->spaceContains(getX(), getY() + k)->isBarrier())
-						return false;
-				}
-			}
-			return true;
-		}
-
-		else if (getWorld()->getPlayer()->getY() < getY() && getDirection() == down)
-		{
-			for (int k = 1; k < getY() - getWorld()->getPlayer()->getY(); k++)
-			{
-				if (getWorld()->spaceContains(getX(), getY() - k) != nullptr)
-				{
-					if (getWorld()->spaceContains(getX(), getY() - k)->isBarrier())
-						return false;
-				}
-			}
-			return true;
-		}
-	}
-
-
-	else if (getWorld()->getPlayer()->getY() == getY())
-	{
-		if (getWorld()->getPlayer()->getX() > getX() && getDirection() == right)
-		{
-
-			for (int k = 1; k < getWorld()->getPlayer()->getX() - getX(); k++)
-			{
-				if (getWorld()->spaceContains(getX() + k, getY()) != nullptr)
-				{
-					if (getWorld()->spaceContains(getX() + k, getY())->isBarrier())
-						return false;
-				}
-			}
-			return true;
-
-		}
-
-		else if (getWorld()->getPlayer()->getX() < getX() && getDirection() == left)
-		{
-			for (int k = 1; k < getX() - getWorld()->getPlayer()->getX(); k++)
-			{
-				if (getWorld()->spaceContains(getX() - k, getY()) != nullptr)
-				{
-					if (getWorld()->spaceContains(getX() - k, getY())->isBarrier())
-						return false;
-				}
-			}
-			return true;
-
-		}
-	}
-
-	return false;
-}
-
-void Robot::setTick()
-{
-	m_tick = (28 - getWorld()->getLevel()) / 4;
-
-	if (m_tick < 3)
-		m_tick = 3;
-}
-
-void Robot::decTick()
-{
-	m_tick--;
-}
-}
-bool Robot::doesShoot() const
-{
-	return true;
-}
-bool Robot::shouldContinue() const
-{
-	return m_continue;
-}
-
-SnarlBot::SnarlBot(StudentWorld* swd, int x, int y, Direction d)
-	: Robot(swd, IID_SNARLBOT, x, y, 10, d, 100)
-{}
-void Snarlbot::doSomething() {
-	//if (isAlive()) {
-	Robot::doSomething();
-	if (!shouldContinue())
-		return;
-	bool didMove = moveRegular(getDirection());
-	if (!didMove)       //si no se mueve, que retorne otra direccion
-	{
-		if (getDirection() == right)
-			setDirection(left);
-
-		else if (getDirection() == left)
-			setDirection(right);
-
-		else if (getDirection() == up)
-			setDirection(down);
-
-		else if (getDirection() == down)
-			setDirection(up);
-
-	}
-	setTick(); //resetee tick
-//}
-	KleptoBot::KleptoBot(StudentWorld * swd, int ID, int x, int y, int health, int bonus)
-		: Robot(swd, ID, x, y, health, right, bonus), hasGoodie(false), m_currentDirectionSteps(0)
-	{
-		m_distanceBeforeTurning = rand() % 6 + 1;       //distancia random entre 1-6
-	}
-
-	void KleptoBot::doSomething()
-	{
-		Robot::doSomething();
-
-		if (!shouldContinue())
-			return;
-
-		bool didMove = false;
-
-		Pickup* goodie = getWorld()->takeStealable(getX(), getY());
-
-		if (goodie != nullptr && !hasGoodie)        //para recolectar un goodie
-		{
-			int stealChance = rand() % 10 + 1;  //chance de robar en random de 1-10
-			if (stealChance == 5)
-			{
-				goodie->setDead();      //destruir el goodie
+				setGoodie(dynamic_cast<Goodie*>(a));
+				//a->~GraphObject(Goodie);									//makes it so that goodie doesn't do anything anymore while its stolen
 				getWorld()->playSound(SOUND_ROBOT_MUNCH);
-				hasGoodie = true;
-				if (goodie->getBonus() == 1000)
-					goodieKind = 'L';
-				else if (goodie->getBonus() == 500) //si matas al kleptobot
-					goodieKind = 'R';
-				else if (goodie->getBonus() == 100)
-					goodieKind = 'A';
-				setTick();
-				return;
-			}
-
-		}
-
-		if (m_currentDirectionSteps <= m_distanceBeforeTurning)
-		{
-			didMove = moveRegular(getDirection());
-
-			if (didMove)
-			{
-				m_currentDirectionSteps++;
-				setTick();
+				a->setVisible(false);							// hides the goodie
 				return;
 			}
 		}
-
-
-		if (!didMove)       //seleccionar una direccion random, en caso de que no se pueda mover 
+		if (turnsLeft() < distanceBeforeTurning() && moveIfPossible())	// try to move if there are still turns left
 		{
-			m_distanceBeforeTurning = rand() % 6 + 1;
+			incTurn();
+		}
+		else
+		{
+			setNewDistanceBeforeTurning((rand() % 6) + 1);				// set new random distance and reset values
+			resetTurns();
 
-			int y = 0;
-			bool doneUp = false;
-			bool doneRight = false;
-			bool doneDown = false;
-			bool doneLeft = false;
-
-
-			while (int x = rand() % 4 + 1)
+			for (int i = 4; i > 0; i--)									// keep setting random direction until it can move
 			{
-
-				if (y == 0)  //empezara con un num aleatorio del 1-4
-					y = x;
-
-				if (x == 1 && !doneUp)
+				setRandomDirection(i);
+				if (moveIfPossible())
 				{
-
-					if (moveRegular(up))
-					{
-						setDirection(up);
-						setTick();
-						return;
-					}
-
-					doneUp = true;
-				}
-
-				if (x == 2 && !doneRight) //si no ha sido probado
-				{
-					if (moveRegular(right))    //probar para mover a la derecha 
-					{
-						setDirection(right);        //en caso de que si se mueva se pone la direccion y el tick
-						setTick();
-						return;
-					}
-					doneRight = true;
-				}
-
-				if (x == 3 && !doneDown)
-				{
-					if (moveRegular(down))
-					{
-						setDirection(right);
-						setTick();
-						return;
-					}
-					doneDown = true;
-				}
-				if (x == 4 && !doneLeft)
-				{
-					if (moveRegular(left))
-					{
-						setDirection(left);
-						setTick();
-						return;
-					}
-					doneLeft = true;
-				}
-
-				if (doneUp && doneRight && doneDown && doneLeft)
+					incTurn();
 					break;
+				}
 			}
 
-
-			// si no se puede mover, poner la direccion de cara a la primera direccion
-			if (y == 1)
-				setDirection(up);
-			if (y == 2)
-				setDirection(right);
-			if (y == 3)
-				setDirection(down);
-			if (y == 4)
-				setDirection(left);
 		}
-
-		setTick();
 	}
-
-	void KleptoBot::doDamage()
-	{
-		Robot::doDamage();
-		if (!isAlive() && hasGoodie)      //si tiene un goodie se le agrega donde murio el robot 
-		{
-			getWorld()->addGoodieBack(getX(), getY(), goodieKind);
-
-		}
-
-	}
-
-	bool KleptoBot::countsInFactoryCount() const
-	{
-		return true;    //solo el kleptobot se cuenta
-	}
-
-
-
-	RegularKleptoBot::RegularKleptoBot(StudentWorld * swd, int x, int y)
-		:KleptoBot(swd, IID_KleptoBot, x, y, 5, 10)
-	{}
-
-	bool RegularKleptoBot::doesShoot() const
-	{
-		return false;
-	}
-
-
-
-	AngryKleptoBot::AngryKleptoBot(StudentWorld * swd, int x, int y)
-		:KleptoBot(swd, IID_ANGRY_KleptoBot, x, y, 8, 20)
-	{}
 }
+
+void RegularKleptoBot::damage(int damageAmt)
+{
+	Robot::damage(damageAmt);
+	if (getScore() <= 0)						// drop goodie if stole at current location when dead
+	{
+		if (myGoodie() != nullptr)
+		{
+			myGoodie()->setVisible(true);
+			//myGoodie()->notStolen();
+			myGoodie()->moveTo(getX(), getY());
+		}
+	}
+}
+
+//ANGRYKLEPTOBOT
+
+AngryKleptoBot::AngryKleptoBot(StudentWorld* world, int startX, int startY) : KleptoBot(world, startX, startY, IID_ANGRY_KLEPTOBOT, 8, 20)
+{
+}
+
+void AngryKleptoBot::doSomething()
+{
+	if (!isAlive())
+		return;
+	if (isItTime())							// checks to see if it is allowed to act
+	{
+		if (needsClearShot())				// shoot if clear shot towards player
+		{
+			getWorld()->playSound(SOUND_ENEMY_FIRE);
+			//getWorld()->getPlayer(this);
+			return;
+		}
+		Actor* a = getDirection(getX(), getY());
+		if (a->isStealable() && myGoodie() == nullptr)			// same as regularkleptobot
+		{
+			if ((rand() % 10) == 1)
+			{
+				setGoodie(dynamic_cast<Goodie*>(a));
+				//a->esRecogido();
+				getWorld()->playSound(SOUND_ROBOT_MUNCH);
+				a->setVisible(false);
+				return;
+			}
+		}
+		if (turnsLeft() < distanceBeforeTurning() && moveIfPossible())
+		{
+			incTurn();
+		}
+		else
+		{
+			setNewDistanceBeforeTurning(rand() % 6 + 1);
+			resetTurns();
+
+			for (int i = 4; i > 0; i--)
+			{
+				setRandomDirection(i);
+				if (moveIfPossible())
+				{
+					incTurn();
+					break;
+				}
+			}
+
+		}
+	}
+}
+
+void AngryKleptoBot::damage(int damageAmt)
+{
+	Robot::damage(damageAmt);
+	if (getHealth() <= 0)
+	{
+		if (myGoodie() != nullptr)					// drop current goodie if have at current location when dead
+		{
+			myGoodie()->setVisible(true);
+			myGoodie()->getRecogido();
+			myGoodie()->moveTo(getX(), getY());
+		}
+	}
+}
+
+
+

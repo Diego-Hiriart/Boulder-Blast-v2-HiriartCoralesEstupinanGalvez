@@ -147,46 +147,153 @@ public:
 
 	}
 };
-
-class Snarlbot : public Actor {
+//robot
+class Agent : public Actor
+{
 public:
-	Snarlbot(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_SNARLBOT, startx, starty, dir, world) {
-		this->setAlive();
-		this->setHealth(10);
-	}
-	void doSomething();
-	void colision(int x, int y);
-	void disparar();
+	Agent(int imageID, int startX, int startY, StudentWorld* world, Direction dir, unsigned int hitPoints);
+	virtual ~Agent() {}
+	// Move to the adjacent square in the direction the agent is facing
+	// if it is not blocked, and return true.  Return false if the agent
+	// can't move.
+	bool moveIfPossible();
+
+	// agents are able to take damage 
+	virtual bool isDamageable() const { return true; }
+
+	// Return true if this agent can push boulders (which means it's the
+	// player).
+	virtual bool needsClearShot() const;
+
+	//agents stop bullets from moving
+	virtual bool stopsBullet() const { return true; }
+	// agents block player from moving
+	virtual bool blocksPlayer() const { return true; }
 };
 
-class Kleptobot : public Actor {
+class Robot : public Agent
+{
 public:
-	Kleptobot(int startx, int starty, StudentWorld* world, int IID) : Actor(IID, startx, starty, right, world) {
-		this->setAlive();
-		this->setHealth(5);
-	}
+	Robot(StudentWorld* world, int startX, int startY, int imageID,
+		unsigned int hitPoints, unsigned int score, Direction startDir);
+	virtual ~Robot() {}
+	// robots are unable to push boulders
+	virtual bool canPushBoulders() const { return false; }
+	// used to determine whether robot is allowed to shoot
+	virtual bool needsClearShot();
+
+	// used to play sound when damaged
+	virtual bool isDamageable() const;
+
+	//checks to see whether it can move due to tick system
+	bool isItTime();
+
+	// used to play death sound when dead
+	virtual void damage(int damageAmt);
+
+	// used to obtain private data member m_score
+	virtual int getScore() { return m_score; }
+private:
+	int m_score;
+	int currentTick;
+	int m_ticks;
+	bool timeToAct;
 };
 
-class AngryKleptobot : public Kleptobot {
+class SnarlBot : public Robot
+{
 public:
-	AngryKleptobot(int startx, int starty, StudentWorld* world, int IID) : Kleptobot(startx, starty, world, IID) {
-		this->setAlive();
-		this->setHealth(8);	
-	}
+	SnarlBot(StudentWorld* world, int startX, int startY, Direction startDir);
+	virtual ~SnarlBot() {}
+	virtual void doSomething();
 };
 
-class KleptobotFactory : public Actor {
+class KleptoBot : public Robot
+{
 public:
-	KleptobotFactory(int startx, int starty, StudentWorld* world) : Actor(IID_ROBOT_FACTORY, startx, starty, right, world) {
-		//Produce kleptobots normales
-	}
+	KleptoBot(StudentWorld* world, int startX, int startY, int imageID,
+		unsigned int hitPoints, unsigned int score);
+	virtual ~KleptoBot() {}
+
+	// used when factory does its census
+	virtual bool countsInFactoryCensus() const { return true; }
+
+	// increment turns tick
+	void incTurn() { m_turns++; }
+
+	// turns left before can act
+	int turnsLeft() { return m_turns; }
+
+	// return private data member m_distanceBeforeTurning
+	int distanceBeforeTurning() { return m_distanceBeforeTurning; }
+
+	// create new random distance before turning
+	void setNewDistanceBeforeTurning(int a) { m_distanceBeforeTurning = a; }
+
+	// sets a random direction
+	void setRandomDirection(int times);
+
+	// sets m_turns back to 0 to restart cycle
+	void resetTurns() { m_turns = 0; }
+
+	// retrieves pointer to private data member Goodie since each KleptoBot may have a Goodie
+	Goodie* myGoodie() { return m_goodie; }
+
+	// set Kleptobot m_goodie value
+	void setGoodie(Goodie* a) { m_goodie = a; }
+private:
+	Goodie* m_goodie;
+	int m_turns;
+	int m_distanceBeforeTurning;
 };
 
-class AngryKleptobotFactory : public KleptobotFactory {
+class RegularKleptoBot : public KleptoBot
+{
 public:
-	AngryKleptobotFactory(int startx, int starty, StudentWorld* world) : KleptobotFactory(startx, starty, world) {
-		//Produce angry kleptobots
-	}
+	RegularKleptoBot(StudentWorld* world, int startX, int startY);
+	virtual ~RegularKleptoBot() {}
+
+	// has its own original behavior
+	virtual void doSomething();
+
+	// special case since RegularKleptoBot can carry goodie 
+	virtual void damage(int damageAmt);
 };
 
+class AngryKleptoBot : public KleptoBot
+{
+public:
+	AngryKleptoBot(StudentWorld* world, int startX, int startY);
+	virtual ~AngryKleptoBot() {}
+
+	// has RegularKleptoBot's but also tries to shoot
+	virtual void doSomething();
+
+	// used to place goodies down if dead
+	virtual void damage(int damageAmt);
+};
+
+class KleptoBotFactory : public Actor
+{
+public:
+	enum ProductType { REGULAR, ANGRY };
+
+	KleptoBotFactory(StudentWorld* world, int startX, int startY, ProductType type);
+	virtual ~KleptoBotFactory() {}
+
+	// create KleptoBots
+	virtual void doSomething();
+
+	// blocks bullets from continuing
+	virtual bool stopsBullet() const { return true; }
+
+	// returns private data member m_productType
+	ProductType getProductType() { return m_productType; }
+
+	// does not allow to re-step onto factory
+	virtual bool allowsAgentColocation() const { return false; }
+private:
+	int m_count;
+	ProductType m_productType;
+};
 #endif // ACTOR_H_
