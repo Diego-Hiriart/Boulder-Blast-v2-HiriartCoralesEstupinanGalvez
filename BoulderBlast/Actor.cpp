@@ -248,6 +248,7 @@ bool Player::colision(GraphObject* destino) {
 		if (!dynamic_cast<Jewel*>(destino)->getRecogido()) {
 			this->getWorld()->increaseScore(50);
 			this->getWorld()->reduceNumJewels();
+			dynamic_cast<Jewel*>(destino)->eraseActor();
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			dynamic_cast<Jewel*>(destino)->setRecogido(true);
 		}
@@ -275,6 +276,7 @@ bool Player::colision(GraphObject* destino) {
 		if (!dynamic_cast<Ammo*>(destino)->getRecogido()) {
 			this->getWorld()->increaseScore(100);
 			this->aumentaAmmo(20);
+			dynamic_cast<Ammo*>(destino)->eraseActor();
 			this->getWorld()->playSound(SOUND_GOT_GOODIE);
 			dynamic_cast<Ammo*>(destino)->setRecogido(true);
 		}
