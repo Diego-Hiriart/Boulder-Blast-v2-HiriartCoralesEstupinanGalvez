@@ -19,13 +19,10 @@ int StudentWorld::init()
 	Level lev(assetDirectory());
 	std::stringstream level;
 	level.str(std::string());
-	if (getLevel() > 0) { // if completed level 99 then end game
+	if (getLevel() > 4) { // if completed level 99 then end game
 		return GWSTATUS_PLAYER_WON;
 	}
 	level << "level" << setfill('0') << setw(2) << getLevel() << ".dat";
-
-	// DEBUG PARA VER QUE .DAT ESTA CARGANDO
-	cout << level.str();
 	
 	Level::LoadResult result = lev.loadLevel(level.str());
 	if (result == Level::load_fail_file_not_found) {
@@ -129,6 +126,7 @@ int StudentWorld::move()
 			increaseScore(getBonus()); // give any extra points from the bonus
 			increaseScore(2000); // grant points for completing the level
 			playSound(SOUND_FINISHED_LEVEL);
+			this->advanceToNextLevel();
 			return GWSTATUS_FINISHED_LEVEL;
 		}
 		if (!(dynamic_cast<Actor*>(player)->alive)) {

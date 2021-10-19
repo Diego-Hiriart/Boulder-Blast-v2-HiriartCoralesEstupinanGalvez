@@ -50,7 +50,6 @@ void Actor::changeDirection(Direction dir) {
 void Actor::morir() {
 	this->eraseActor();
 	this->alive = false;
-	// this->getWorld()->deleteElement(this);
 }
 
 void Hole::llenar() {
@@ -85,13 +84,21 @@ bool Exit::getAccesible() {
 	return this->accesible;
 }
 
-int i = 0;
+int Exit::getIterator() {
+	return this->i;
+}
+
+void Exit::setIterator(int i) {
+	this->i = i;
+}
+
 void Exit::doSomething() {
 	if (this->getWorld()->getNumJewels() <= 0) {//Si se recogieron todas la joyas, habilitar la salida
 		this->JoyasRecolectadas();
-		if (i == 0) {
+		if (this->getIterator() == 0) {
+			// ESPERAR TICKS PARA QUE NO SUENE AL MISMO TIEMPO QUE LA JOYA?
 			this->getWorld()->playSound(SOUND_REVEAL_EXIT);
-			i++;
+			this->setIterator(1);
 		}
 	}	
 }
@@ -230,7 +237,7 @@ bool Player::colision(GraphObject* destino) {
 	case 7://Exit
 		if (dynamic_cast<Exit*>(destino)->getAccesible() == 1) {//Si la salida esta habilitada no colisionar y acabar el juego
 			colisiona = false;
-			this->getWorld()->advanceToNextLevel();
+			this->getWorld()->victory = true;
 		}
 		else {//No colisionar pero no acabar el juego, no se gana aun
 			colisiona = false;

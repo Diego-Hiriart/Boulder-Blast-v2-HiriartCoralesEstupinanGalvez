@@ -122,13 +122,17 @@ public:
 	Exit(int startx, int starty, StudentWorld* world) : Actor(IID_EXIT, startx, starty, none, world) {
 		this->setVisible(false);
 		this->accesible = false;
+		this->i = 0;
 	}
 	void doSomething();
 	void JoyasRecolectadas();//Hace visible a la salida
 	void JoyasPerdidas();//Vuelve a ocultar a la salida
 	bool getAccesible();
+	int getIterator();
+	void setIterator(int i);
 private:
 	bool accesible = false;
+	int i = 0;
 };
 
 class Goodie : public Actor {
