@@ -182,33 +182,31 @@ private:
 
 class Kleptobot : public Actor {
 public:
-	Kleptobot(int startx, int starty, StudentWorld* world, int IID) : Actor(IID, startx, starty, right, world) {
+	Kleptobot(int startx, int starty, StudentWorld* world, int IID, bool angry) : Actor(IID, startx, starty, right, world) {
 		this->setAlive();
-		this->setHealth(5);
-	}
-};
-
-class AngryKleptobot : public Kleptobot {
-public:
-	AngryKleptobot(int startx, int starty, StudentWorld* world, int IID) : Kleptobot(startx, starty, world, IID) {
-		this->setAlive();
-		this->setHealth(8);	
+		if (!angry) {
+			this->setHealth(5);
+		}
+		else {
+			this->setHealth(8);
+		}
+		
 	}
 };
 
 class KleptobotFactory : public Actor {
 public:
-	KleptobotFactory(int startx, int starty, StudentWorld* world) : Actor(IID_ROBOT_FACTORY, startx, starty, right, world) {
-		//Produce kleptobots normales
+	KleptobotFactory(int startx, int starty, StudentWorld* world, bool angry) : Actor(IID_ROBOT_FACTORY, startx, starty, none, world) {
 		this->setAlive();
+		this->angry = angry;
+		this->getWorld()->playSound(SOUND_ROBOT_BORN);
 	}
-};
-
-class AngryKleptobotFactory : public KleptobotFactory {
-public:
-	AngryKleptobotFactory(int startx, int starty, StudentWorld* world) : KleptobotFactory(startx, starty, world) {
-		//Produce angry kleptobots
-	}
+	void doSomething();
+	bool puedeFabricar();
+	void fabricar();
+	bool getAngry();
+private:
+	bool angry = false;
 };
 
 #endif // ACTOR_H_

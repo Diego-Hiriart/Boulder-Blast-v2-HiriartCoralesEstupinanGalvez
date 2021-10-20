@@ -430,7 +430,7 @@ bool Bullet::colision(int x, int y) {
 			this->morir();
 			break;
 		case 3://Angry klepto
-			dynamic_cast<AngryKleptobot*>(colision)->decreaseHealth(2);
+			dynamic_cast<Kleptobot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
 			this->morir();
 			break;
@@ -617,4 +617,56 @@ bool Snarlbot::colision(int x, int y) {
 		colisiona = false;
 	}
 	return colisiona;
+}
+
+bool KleptobotFactory::getAngry() {
+	return this->angry;
+}
+
+void KleptobotFactory::doSomething() {
+	if (this->isAlive()) {
+		fabricar();
+	}
+}
+
+bool KleptobotFactory::puedeFabricar() {
+	int contador = 0;
+	int xMin = this->getX() - 3, xMax = this->getX()+3, yMin = this->getY()-3, yMax = this->getY()+3;
+	while (yMax != yMin) {//Iterar por filas
+		if (yMax > 0 && yMax < 15) {//No intentar contrar si esta fuera del rango y del mapa
+			while (xMax != xMin) {//Iterar por columnas
+				if (xMin > 0 && xMin < 15) {//No intentar contrar si esta fuera del rango x del mapa
+					//Revisar elemento de la matriz (fila; columna)
+					GraphObject* revisar = this->getWorld()->getActorByCoordinates(xMin, xMax);
+					if (revisar != nullptr) {
+						if (revisar->getID() == 2 || revisar->getID() == 3) {
+							contador++;
+						}
+					}
+				}
+				xMin++;
+			}
+		}	
+		yMax--;//Bajar de fila
+		xMin = this->getX() - 3;//Reiniciar columna
+	}
+	if (contador < 3) {
+		return true;
+	}else{
+		return false;
+	}
+}
+
+void KleptobotFactory::fabricar() {
+	if (puedeFabricar()) {
+		int probabilidad = rand() % 50 + 1 ;//Producir un numero de 1 a 50, no se usa seed	
+		if (probabilidad > 49) {//Producir solo si es el un valor de los 50 posibles
+			if (!this->getAngry()) {
+				this->getWorld()->addActor(new Kleptobot(this->getX(), this->getY(), this->getWorld(), IID_KLEPTOBOT, false));
+			}
+			else {
+				this->getWorld()->addActor(new Kleptobot(this->getX(), this->getY(), this->getWorld(), IID_ANGRY_KLEPTOBOT, true));
+			}
+		}		
+	}
 }

@@ -68,12 +68,12 @@ int StudentWorld::init()
 					break;
 
 				case Level::kleptobot_factory:
-					addActor(new KleptobotFactory(x, y, this));
+					addActor(new KleptobotFactory(x, y, this, false));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::angry_kleptobot_factory:
-					addActor(new AngryKleptobotFactory(x, y, this));
+					addActor(new KleptobotFactory(x, y, this, true));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
