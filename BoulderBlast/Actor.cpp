@@ -148,10 +148,7 @@ bool Boulder::puedeMoverse(Direction dir) {
 		break;
 	}
 
-	
-
 	if (destino == nullptr) {
-		cout << "Pasa algo aqui 0 ";
 		return true;
 	}
 	else if (destino->getID() == 9) {//Hole
@@ -159,17 +156,13 @@ bool Boulder::puedeMoverse(Direction dir) {
 	}
 	else if (destino->getID() == 8) {//Si hay otra piedra en el destino, solo puede moverse si no esta activa
 		if (dynamic_cast<Boulder*>(destino)->isAlive()) {
-			cout << "Pasa algo aqui 1 ";
 			return false;
 		}
 		else {
-			cout << "Pasa algo aqui 2 ";
 			return true;
 		}
 	}
 	else {//En cualquier otro caso la piedra no se puede mover
-		cout << "Pasa algo aqui 3 ";
-		cout << destino->getID();
 		return false;
 	}
 }
@@ -373,9 +366,8 @@ void Bullet::moveActor(int xDest, int yDest) {
 }
 
 void Bullet::doSomething() {
-	if (isAlive()) {
-		colision(this->getX(), this->getY());
-		if (isAlive()) {//Pudo haber impactado con algo en la colision anterior
+	if (isAlive()) {	
+		if (isAlive() && !colision(this->getX(), this->getY())) {//Si esta vivo y en su cuadro no colisiona avanzar
 			Direction direccion = this->getDirection();
 			switch (direccion) {
 			case up:
@@ -394,7 +386,8 @@ void Bullet::doSomething() {
 				moveActor(this->getX() + 1, this->getY());
 				break;
 			}
-		}		
+			colision(this->getX(), this->getY());//Ver si colisiona en la nueva posicion
+		}
 	}
 }
 
