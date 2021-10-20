@@ -36,7 +36,7 @@ void Actor::decreaseHealth(int amount) {
 			health = 0;
 		}
 	}
-	if (health <= 0) {//Matar al actor si su salud llega a cero
+	if (health <= 0) { //Matar al actor si su salud llega a cero
 		this->morir();
 	}
 }
@@ -50,7 +50,7 @@ void Actor::changeDirection(Direction dir) {
 void Actor::morir() {
 	this->eraseActor();
 	this->alive = false;
-	this->getWorld()->deleteElement(this);//Quitar del mapa por completo
+	this->getWorld()->deleteElement(this); //Quitar del mapa por completo
 }
 
 void Hole::doSomething() {
@@ -147,8 +147,11 @@ bool Boulder::puedeMoverse(Direction dir) {
 		destino = this->getWorld()->getActorByCoordinates(this->getX() + 1, this->getY());
 		break;
 	}
-	cout << destino;
+
+	
+
 	if (destino == nullptr) {
+		cout << "Pasa algo aqui 0 ";
 		return true;
 	}
 	else if (destino->getID() == 9) {//Hole
@@ -156,13 +159,17 @@ bool Boulder::puedeMoverse(Direction dir) {
 	}
 	else if (destino->getID() == 8) {//Si hay otra piedra en el destino, solo puede moverse si no esta activa
 		if (dynamic_cast<Boulder*>(destino)->isAlive()) {
+			cout << "Pasa algo aqui 1 ";
 			return false;
 		}
 		else {
+			cout << "Pasa algo aqui 2 ";
 			return true;
 		}
 	}
 	else {//En cualquier otro caso la piedra no se puede mover
+		cout << "Pasa algo aqui 3 ";
+		cout << destino->getID();
 		return false;
 	}
 }
@@ -387,8 +394,6 @@ void Bullet::doSomething() {
 				moveActor(this->getX() + 1, this->getY());
 				break;
 			}
-
-			colision(this->getX(), this->getY());
 		}		
 	}
 }
@@ -404,39 +409,32 @@ bool Bullet::colision(int x, int y) {
 		case 0://Player
 			dynamic_cast<Player*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_PLAYER_IMPACT);
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 1://Snarl
 			dynamic_cast<Snarlbot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 2://klepto
 			dynamic_cast<Kleptobot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 3://Angry klepto
 			dynamic_cast<AngryKleptobot*>(colision)->decreaseHealth(2);
 			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 4://Factory
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 6://Pared
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		case 8://Boulder
 			dynamic_cast<Boulder*>(colision)->decreaseHealth(2);
-			this->eraseActor();
-			this->alive = false;
+			this->morir();
 			break;
 		default://cuadro vacio u otra bala
 			//Sigue viajando
@@ -444,6 +442,7 @@ bool Bullet::colision(int x, int y) {
 			break;
 		}
 	}
+	
 	return colisiona;
 }
 
