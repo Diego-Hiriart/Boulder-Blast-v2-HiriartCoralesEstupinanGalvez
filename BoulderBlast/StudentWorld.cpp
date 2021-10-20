@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include <algorithm>
 #include "GraphObject.h"
+#include "Actor.h"
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -12,7 +13,7 @@ GameWorld* createStudentWorld(string assetDir)
 	//return new StudentWorld(assetDir);
 }
 
-// Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
+
 int StudentWorld::init()
 {
 	victory = false;
@@ -57,24 +58,29 @@ int StudentWorld::init()
 					break;
 
 				case Level::horiz_snarlbot:
-					addActor(new Snarlbot(x, y, this, GraphObject::Direction::right));
+					
+					addActor(new HorizontalBot(IID_SNARLBOT, x, y, getLevel(), this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::vert_snarlbot:
-					addActor(new Snarlbot(x, y, this, GraphObject::Direction::down));
+					
+					addActor(new VerticalBot(IID_SNARLBOT, x, y, getLevel(), this /*GraphObject::Direction::down)*/));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::kleptobot_factory:
-					addActor(new KleptobotFactory(x, y, this));
+					
+					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "KleptoBot", this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::angry_kleptobot_factory:
-					addActor(new AngryKleptobotFactory(x, y, this));
+					
+					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "Angry KleptoBot", this));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
+
 
 				case Level::boulder:
 					addActor(new Boulder(x, y, this));
@@ -202,7 +208,30 @@ GraphObject* StudentWorld::getActorByCoordinates(int x, int y) {
 	}
 	return nullptr;
 }
+Actor* StudentWorld::getActorDamagedByBulletAt(int x, int y, Actor* act) //vemos
+{
+	if (act != player && player != nullptr)
+	{
+		if (dynamic_cast<Actor*>(player)->alive == false && player->getX() == x && player->getY() == y)
+		{
+			return dynamic_cast<Actor*>(player);
+		}
+	}
+	for (int i = actor.size() - 1; i >= 0; i--)
+	{
+		if (actor[i]->isDead() == false && actor[i] != act)
+		{
+			string name = actor[i]->whoAmI();
+			if (actor[i]->getX() == x && actor[i]->getY() == y)
+			{
+				if (name == "Wall" || name == "VerticalBot" || name == "Boulder" || name == "HorizontalBot" || name == "KleptoBot Factory" || name == "Angry KleptoBot" || name == "KleptoBot")
+					return actor[i];
+			}
+		}
+	}
+	return nullptr;
 
+}
 int StudentWorld::getNumActors() {
 	numActors = actorVector.size();
 	return numActors;

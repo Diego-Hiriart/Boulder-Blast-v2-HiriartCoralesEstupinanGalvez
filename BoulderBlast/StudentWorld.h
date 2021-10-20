@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+class Actor;
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
@@ -22,9 +23,12 @@ public:
 	}
 
 	virtual int init();
+	Actor* getActorDamagedByBulletAt(int x, int y, Actor* actor); //dan errores
+	Actor* getGoodieAt(int x, int y, Actor* act);
 	/*{
 		return GWSTATUS_CONTINUE_GAME;
 	}*/
+	std::vector<Actor*> actor;
 
 	virtual int move2()
 	{
@@ -60,7 +64,7 @@ private:
 	int numJewels; // number of jewels on the map. If it reaches 0, exit appears
 	int numActors; // number of actors in actorVector
 	int bonus;
-
+	
 	/*Deben usar esta variable para contar el número de piedra*/
 	int numeroPiedras;
 };
