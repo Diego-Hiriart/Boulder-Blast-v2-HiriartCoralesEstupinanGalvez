@@ -53,6 +53,7 @@ public:
 	void aumentaAmmo(int cantidad);
 	void morir();
 	int getAmmo();
+	void decreaseHealth(int amount);
 private:
 	int ammo;
 
@@ -164,10 +165,19 @@ public:
 	Snarlbot(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_SNARLBOT, startx, starty, dir, world) {
 		this->setAlive();
 		this->setHealth(10);
+		this->contador = 0;
+		this->ticks = Descanso();
 	}
 	void doSomething();
-	void colision(int x, int y);
+	bool colision(int x, int y);
 	void disparar();
+	void decreaseHealth(int amount);
+	void morir();
+	void movimiento();
+private:
+	int ticks;
+	int contador;
+	int Descanso();
 };
 
 class Kleptobot : public Actor {
