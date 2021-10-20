@@ -1,20 +1,2 @@
 ﻿  Actor.cpp
-  GameController.cpp
-  GameWorld.cpp
-  main.cpp
-  StudentWorld.cpp
-C:\Users\User\Documents\GitHub\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(145,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\User\Documents\GitHub\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(149,9): warning C4018: '>': no coinciden signed/unsigned
-C:\Users\User\Documents\GitHub\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(144,7): warning C4101: 'turn': variable local sin referencia
-C:\Users\User\Documents\GitHub\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\StudentWorld.cpp(204,20): warning C4018: '<': no coinciden signed/unsigned
-  Generando código...
-Actor.obj : error LNK2019: símbolo externo "public: class Actor * __thiscall StudentWorld::getGoodieAt(int,int,class Actor *)" (?getGoodieAt@StudentWorld@@QAEPAVActor@@HHPAV2@@Z) sin resolver al que se hace referencia en la función "public: virtual void __thiscall KleptoBot::doSomething(void)" (?doSomething@KleptoBot@@UAEXXZ)
-Actor.obj : error LNK2001: símbolo externo "public: virtual bool __thiscall Actor::isDead(void)const " (?isDead@Actor@@UBE_NXZ) sin resolver
-StudentWorld.obj : error LNK2001: símbolo externo "public: virtual bool __thiscall Actor::isDead(void)const " (?isDead@Actor@@UBE_NXZ) sin resolver
-Actor.obj : error LNK2019: símbolo externo "public: virtual void __thiscall Actor::setDead(void)" (?setDead@Actor@@UAEXXZ) sin resolver al que se hace referencia en la función "public: virtual void __thiscall KleptoBot::setDead(void)" (?setDead@KleptoBot@@UAEXXZ)
-StudentWorld.obj : error LNK2001: símbolo externo "public: virtual void __thiscall Actor::setDead(void)" (?setDead@Actor@@UAEXXZ) sin resolver
-Actor.obj : error LNK2019: símbolo externo "public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall Actor::whoAmI(void)const " (?whoAmI@Actor@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ) sin resolver al que se hace referencia en la función "public: virtual int __thiscall KleptoBotFactory::canIProduce(void)" (?canIProduce@KleptoBotFactory@@UAEHXZ)
-StudentWorld.obj : error LNK2001: símbolo externo "public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall Actor::whoAmI(void)const " (?whoAmI@Actor@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ) sin resolver
-Actor.obj : error LNK2019: símbolo externo "public: void __thiscall Actor::fireBullet(void)" (?fireBullet@Actor@@QAEXXZ) sin resolver al que se hace referencia en la función "public: virtual void __thiscall HorizontalBot::doSomething(void)" (?doSomething@HorizontalBot@@UAEXXZ)
-Actor.obj : error LNK2001: símbolo externo "public: virtual bool __thiscall Robot::canShoot(enum GraphObject::Direction)" (?canShoot@Robot@@UAE_NW4Direction@GraphObject@@@Z) sin resolver
-C:\Users\User\Documents\GitHub\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe : fatal error LNK1120: 6 externos sin resolver
+  BoulderBlast.vcxproj -> C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe

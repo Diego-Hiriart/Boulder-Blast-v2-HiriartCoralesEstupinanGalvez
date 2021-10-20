@@ -20,10 +20,6 @@ public:
 	void eraseActor();
 	void setAlive();
 	bool isAlive();
-	virtual bool isDead() const;
-	virtual void setDead();
-	std::string whoAmI() const;
-	void fireBullet();
 	void setHealth(int health);
 	int getHealth();
 	void morir();
@@ -57,6 +53,7 @@ public:
 	void aumentaAmmo(int cantidad);
 	void morir();
 	int getAmmo();
+	void decreaseHealth(int amount);
 private:
 	int ammo;
 
@@ -77,6 +74,10 @@ public:
 		this->setAlive();
 		this->setHealth(10);
 	}
+	void doSomething();
+	bool colision(int x, int y);
+	bool puedeMoverse(Direction dir);
+	void moverPiedra(Direction dir);
 };
 
 class Bullet : public Actor {
@@ -93,14 +94,16 @@ public:
 class Hole : public Actor {
 public:
 	Hole(int startx, int starty, StudentWorld* world) : Actor(IID_HOLE, startx, starty, none, world) {
-
+		this->setAlive();
 	}
+	void doSomething();
 };
 
 class Jewel : public Actor {
 public:
 	Jewel(int startx, int starty, StudentWorld* world) : Actor(IID_JEWEL, startx, starty, none, world) {
-
+		this->setAlive();
+		this->recogido = false;
 	}
 	void setRecogido(bool estado);
 	bool getRecogido();
@@ -111,18 +114,23 @@ private:
 class Exit : public Actor {
 public:
 	Exit(int startx, int starty, StudentWorld* world) : Actor(IID_EXIT, startx, starty, none, world) {
+		this->setAlive();
 		this->setVisible(false);
-		this->accesible = false;
+		this->revelada = false;
 	}
+	void doSomething();
 	void JoyasRecolectadas();//Hace visible a la salida
 	void JoyasPerdidas();//Vuelve a ocultar a la salida
+	void setRevelada(bool estado);
+	bool getRevelada();	
 private:
-	bool accesible = false;
+	bool revelada;
 };
 
 class Goodie : public Actor {
 public:
 	Goodie(int startx, int starty, StudentWorld* world, int ID) : Actor(ID, startx, starty, none, world) {
+		this->setAlive();
 		this->recogido;
 	}
 	void setRecogido(bool estado);
@@ -152,85 +160,53 @@ public:
 	}
 };
 
-
-//intento 2 robot 
-class Robot : public Actor
-{
+class Snarlbot : public Actor {
 public:
-	Robot(int graphicId, int startx, int starty, Direction dir, int health, int level, StudentWorld* world);
-	virtual bool blocksPlayer(Direction dir);
-	virtual bool damagedByBullet();
-	virtual bool canDoSomething();
-	virtual bool isBlocked(Direction dir);
-	virtual bool canShoot(Direction dir);
-	virtual void addPuntaje() = 0;
-	virtual ~Robot();
-
+	Snarlbot(int startx, int starty, StudentWorld* world, Direction dir) : Actor(IID_SNARLBOT, startx, starty, dir, world) {
+		this->setAlive();
+		this->setHealth(10);
+		this->contador = 0;
+		this->ticks = Descanso();
+	}
+	void doSomething();
+	bool colision(int x, int y);
+	void disparar();
+	void decreaseHealth(int amount);
+	void morir();
+	void movimiento();
 private:
-	int m_ticksMax;
-	int m_health;
-	int m_tickContador;
-};
-class SnarlBot : public Robot
-{
-public:
-	SnarlBot(int graphicId, int startx, int starty, Direction dir, int level, StudentWorld* world);
-	virtual void cambiarDir(Direction dir);
-	virtual void addPuntaje();
-	virtual ~SnarlBot();
+	int ticks;
+	int contador;
+	int Descanso();
 };
 
-class HorizontalBot : public SnarlBot
-{
+class Kleptobot : public Actor {
 public:
-	HorizontalBot(int graphicId, int startx, int starty, int level, StudentWorld* world);
-	virtual void doSomething();
-	virtual ~HorizontalBot();
+	Kleptobot(int startx, int starty, StudentWorld* world, int IID, bool angry) : Actor(IID, startx, starty, right, world) {
+		this->setAlive();
+		if (!angry) {
+			this->setHealth(5);
+		}
+		else {
+			this->setHealth(8);
+		}
+		
+	}
 };
 
-class VerticalBot : public SnarlBot
-{
+class KleptobotFactory : public Actor {
 public:
-	VerticalBot(int graphicId, int startx, int starty, int level, StudentWorld* world);
-	virtual void doSomething();
-	virtual ~VerticalBot();
-};
-class KleptoBotFactory : public Actor
-{
-public:
-	KleptoBotFactory(int imageID, int startX, int startY, std::string whatToProduce, StudentWorld* world);
-	virtual void doSomething();
-	virtual bool blocksPlayer(Direction dir);
-	virtual bool damagedByBullet();
-	virtual int canIProduce();
-	virtual ~KleptoBotFactory();
+	KleptobotFactory(int startx, int starty, StudentWorld* world, bool angry) : Actor(IID_ROBOT_FACTORY, startx, starty, none, world) {
+		this->setAlive();
+		this->angry = angry;
+		this->getWorld()->playSound(SOUND_ROBOT_BORN);
+	}
+	void doSomething();
+	bool puedeFabricar();
+	void fabricar();
+	bool getAngry();
 private:
-	std::string m_produce;
-	bool produced;
-};
-class KleptoBot : public Robot
-{
-public:
-	KleptoBot(int graphicId, int startX, int startY, int level, int healthOfBot, std::string name, StudentWorld* world);
-	virtual void addPuntaje();
-	virtual void doSomething();
-	virtual void setDead();
-	virtual ~KleptoBot();
-private:
-	void determineDirection(Direction dir);
-	void changeDirection();
-	int m_health;
-	bool m_hasPickedUpItem;
-	int m_distanceToMove;
-	std::string whatAmIHolding;
-
-};
-class AngryKleptoBot : public KleptoBot
-{
-public:
-	AngryKleptoBot(int imageID, int startX, int startY, int level, int healthOfBot, std::string name, StudentWorld* world);
-	virtual void addScore();
-	virtual ~AngryKleptoBot();
+	bool angry = false;
 };
 
 #endif // ACTOR_H_

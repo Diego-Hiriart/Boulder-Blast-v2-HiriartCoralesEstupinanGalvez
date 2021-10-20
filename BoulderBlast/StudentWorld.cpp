@@ -3,7 +3,6 @@
 #include "Actor.h"
 #include <algorithm>
 #include "GraphObject.h"
-#include "Actor.h"
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -13,17 +12,18 @@ GameWorld* createStudentWorld(string assetDir)
 	//return new StudentWorld(assetDir);
 }
 
-
+// Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
 int StudentWorld::init()
 {
 	victory = false;
 	Level lev(assetDirectory());
 	std::stringstream level;
 	level.str(std::string());
-	if (getLevel() > 0) { // if completed level 99 then end game
+	if (getLevel() > 4) { // if completed level 99 then end game
 		return GWSTATUS_PLAYER_WON;
 	}
 	level << "level" << setfill('0') << setw(2) << getLevel() << ".dat";
+	
 	Level::LoadResult result = lev.loadLevel(level.str());
 	if (result == Level::load_fail_file_not_found) {
 		return GWSTATUS_PLAYER_WON; // level not found, assume no more levels so player wins!
@@ -58,29 +58,24 @@ int StudentWorld::init()
 					break;
 
 				case Level::horiz_snarlbot:
-					
-					addActor(new HorizontalBot(IID_SNARLBOT, x, y, getLevel(), this));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::right));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::vert_snarlbot:
-					
-					addActor(new VerticalBot(IID_SNARLBOT, x, y, getLevel(), this /*GraphObject::Direction::down)*/));
+					addActor(new Snarlbot(x, y, this, GraphObject::Direction::down));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::kleptobot_factory:
-					
-					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "KleptoBot", this));
+					addActor(new KleptobotFactory(x, y, this, false));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
 
 				case Level::angry_kleptobot_factory:
-					
-					addActor(new KleptoBotFactory(IID_ROBOT_FACTORY, x, y, "Angry KleptoBot", this));
+					addActor(new KleptobotFactory(x, y, this, true));
 					getActorByCoordinates(x, y)->setVisible(true);
 					break;
-
 
 				case Level::boulder:
 					addActor(new Boulder(x, y, this));
@@ -93,9 +88,9 @@ int StudentWorld::init()
 					break;
 
 				case Level::jewel:
+					this->increaseNumJewels();
 					addActor(new Jewel(x, y, this));
 					getActorByCoordinates(x, y)->setVisible(true);
-					increaseNumJewels();
 					break;
 
 				case Level::restore_health:
@@ -150,7 +145,7 @@ int StudentWorld::move()
 			i -= (g - actorVector.size()); // since new object will be at current location
 		}
 	}
-	if (dynamic_cast<Actor*>(getPlayer())->getHealth() == 0) {
+	if (dynamic_cast<Actor*>(getPlayer())->getHealth() <= 0) {
 		goto exit;
 	}
 	if (getBonus() > 0) {
@@ -208,30 +203,7 @@ GraphObject* StudentWorld::getActorByCoordinates(int x, int y) {
 	}
 	return nullptr;
 }
-Actor* StudentWorld::getActorDamagedByBulletAt(int x, int y, Actor* act) //vemos
-{
-	if (act != player && player != nullptr)
-	{
-		if (dynamic_cast<Actor*>(player)->alive == false && player->getX() == x && player->getY() == y)
-		{
-			return dynamic_cast<Actor*>(player);
-		}
-	}
-	for (int i = actor.size() - 1; i >= 0; i--)
-	{
-		if (actor[i]->isDead() == false && actor[i] != act)
-		{
-			string name = actor[i]->whoAmI();
-			if (actor[i]->getX() == x && actor[i]->getY() == y)
-			{
-				if (name == "Wall" || name == "VerticalBot" || name == "Boulder" || name == "HorizontalBot" || name == "KleptoBot Factory" || name == "Angry KleptoBot" || name == "KleptoBot")
-					return actor[i];
-			}
-		}
-	}
-	return nullptr;
 
-}
 int StudentWorld::getNumActors() {
 	numActors = actorVector.size();
 	return numActors;
@@ -262,5 +234,9 @@ void StudentWorld::reduceNumJewels() {
 
 void StudentWorld::increaseNumJewels() {
 	numJewels++;
+}
+
+int StudentWorld::getNumJewels() {
+	return this->numJewels;
 }
 
