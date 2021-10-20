@@ -126,7 +126,6 @@ int StudentWorld::move()
 			increaseScore(getBonus()); // give any extra points from the bonus
 			increaseScore(2000); // grant points for completing the level
 			playSound(SOUND_FINISHED_LEVEL);
-			this->advanceToNextLevel();
 			return GWSTATUS_FINISHED_LEVEL;
 		}
 		if (!(dynamic_cast<Actor*>(player)->alive)) {

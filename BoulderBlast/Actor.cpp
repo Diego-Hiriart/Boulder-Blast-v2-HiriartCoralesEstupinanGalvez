@@ -50,16 +50,20 @@ void Actor::changeDirection(Direction dir) {
 void Actor::morir() {
 	this->eraseActor();
 	this->alive = false;
+	this->getWorld()->deleteElement(this);//Quitar del mapa por completo
 }
 
-void Hole::llenar() {
-	this->llenado = true;
-	this->morir();
-	this->getWorld()->deleteElement(this);
-}
-
-bool Hole::getLlenado() {
-	return this->llenado;
+void Hole::doSomething() {
+	if (this->isAlive()) {
+		GraphObject* colision = this->getWorld()->getActorByCoordinates(this->getX(), this->getY());
+		if (colision->getID() == 8) {			
+			this->morir();
+			dynamic_cast<Boulder*>(colision)->morir();
+		}
+	}
+	else {
+		this->getWorld()->deleteElement(this);
+	}
 }
 
 void Jewel::setRecogido(bool estado) {
@@ -73,35 +77,30 @@ bool Jewel::getRecogido() {
 
 void Exit::JoyasRecolectadas() {//Hace visible a la salida
 	this->setVisible(true);
-	this->accesible = true;
 }
 
 void Exit::JoyasPerdidas() {//Vuelve a oculatr a la salida
 	this->setVisible(false);
-	this->accesible = false;
 }
 
-bool Exit::getAccesible() {
-	return this->accesible;
+void Exit::setRevelada(bool estado) {
+	this->revelada = estado;
 }
 
-int Exit::getIterator() {
-	return this->i;
-}
-
-void Exit::setIterator(int i) {
-	this->i = i;
+bool Exit::getRevelada() {
+	return this->revelada;
 }
 
 void Exit::doSomething() {
-	if (this->getWorld()->getNumJewels() <= 0) {//Si se recogieron todas la joyas, habilitar la salida
-		this->JoyasRecolectadas();
-		if (this->getIterator() == 0) {
-			// ESPERAR TICKS PARA QUE NO SUENE AL MISMO TIEMPO QUE LA JOYA?
-			this->getWorld()->playSound(SOUND_REVEAL_EXIT);
-			this->setIterator(1);
-		}
-	}	
+	if (!this->isVisible()) {
+		if (this->getWorld()->getNumJewels() <= 0) {//Si se recogieron todas la joyas, habilitar la salida
+			this->JoyasRecolectadas();
+		}		
+	}
+	else if(!this->getRevelada()){//Para que no suene al mismo tiempo que la joya
+		this->getWorld()->playSound(SOUND_REVEAL_EXIT);
+		this->setRevelada(true);
+	}
 }
 
 void Goodie::setRecogido(bool estado) {//Definir si se ha recogido o volvió a su lugar de origen si se matoa un kleptobot
@@ -111,16 +110,6 @@ void Goodie::setRecogido(bool estado) {//Definir si se ha recogido o volvió a su
 
 bool Goodie::getRecogido() {
 	return this->recogido;
-}
-
-void Boulder::usar() {
-	this->usada = true;
-	this->morir();//Debe ser removida totalmente
-	this->getWorld()->deleteElement(this);
-}
-
-bool Boulder::getUsada() {
-	return this->usada;
 }
 
 void Boulder::moverPiedra(Direction dir) {
@@ -158,11 +147,20 @@ bool Boulder::puedeMoverse(Direction dir) {
 		destino = this->getWorld()->getActorByCoordinates(this->getX() + 1, this->getY());
 		break;
 	}
+	cout << destino;
 	if (destino == nullptr) {
 		return true;
 	}
 	else if (destino->getID() == 9) {//Hole
 		return true;
+	}
+	else if (destino->getID() == 8) {//Si hay otra piedra en el destino, solo puede moverse si no esta activa
+		if (dynamic_cast<Boulder*>(destino)->isAlive()) {
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 	else {//En cualquier otro caso la piedra no se puede mover
 		return false;
@@ -175,9 +173,11 @@ bool Boulder::colision(int x, int y) {
 	if (colision == nullptr) {//No colisiona y ninguna accion es tomada
 		colisiona = false;
 	}else if (colision->getID() == 9) {//Hole, no colisiona y se mete en el hueco, ambos desapareen
-		colisiona = false;
-		dynamic_cast<Hole*>(colision)->llenar();//Llenar hueco
-		this->usar();//Quitar piedra usada
+		if (dynamic_cast<Hole*>(colision)->isAlive()) {
+			dynamic_cast<Hole*>(colision)->morir();//Llenar hueco
+			this->morir();//Quitar piedra usada
+		}
+		colisiona = false;				
 	}else {//En cualquier otro caso la piedra colisiona y nada pasa
 		colisiona = true;
 	}
@@ -186,6 +186,12 @@ bool Boulder::colision(int x, int y) {
 
 void Boulder::doSomething() {
 	this->colision(this->getX(), this->getY());
+}
+
+void Player::morir() {
+	this->getWorld()->playSound(SOUND_PLAYER_DIE);
+	this->eraseActor();
+	this->alive = false;	
 }
 
 int Player::getAmmo() {
@@ -237,7 +243,7 @@ bool Player::colision(GraphObject* destino) {
 		colisiona = false;
 		break;
 	case 7://Exit
-		if (dynamic_cast<Exit*>(destino)->getAccesible() == 1) {//Si la salida esta habilitada no colisionar y acabar el juego
+		if (dynamic_cast<Exit*>(destino)->isVisible()) {//Si la salida esta habilitada no colisionar y acabar el juego
 			colisiona = false;
 			this->getWorld()->victory = true;
 		}
@@ -246,7 +252,7 @@ bool Player::colision(GraphObject* destino) {
 		}
 		break;
 	case 8://Boulder
-		if (!dynamic_cast<Boulder*>(destino)->getUsada()) {//Si no esta usado o recogido, interactuar
+		if (dynamic_cast<Boulder*>(destino)->isAlive()) {//Si no esta usado o recogido, interactuar
 			if (dynamic_cast<Boulder*>(destino)->puedeMoverse(this->getDirection())) {//Moverse y no colisionar si la piedra puede ser movida
 				dynamic_cast<Boulder*>(destino)->moverPiedra(this->getDirection());//Mover la piedra
 				colisiona = false;
@@ -344,7 +350,8 @@ void Player::doSomething() {
 			break;
 
 		case KEY_PRESS_ESCAPE:
-			this->decreaseHealth(this->getHealth());//Matar al actor
+			this->setHealth(0);//Matar al actor
+			this->morir();
 			break;
 
 		case KEY_PRESS_SPACE:
@@ -396,7 +403,7 @@ bool Bullet::colision(int x, int y) {
 		switch (colision->getID()) {
 		case 0://Player
 			dynamic_cast<Player*>(colision)->decreaseHealth(2);
-			this->getWorld()->playSound(SOUND_ROBOT_IMPACT);
+			this->getWorld()->playSound(SOUND_PLAYER_IMPACT);
 			this->eraseActor();
 			this->alive = false;
 			break;

@@ -72,16 +72,11 @@ public:
 	Boulder(int startx, int starty, StudentWorld* world) : Actor(IID_BOULDER, startx, starty, none, world) {
 		this->setAlive();
 		this->setHealth(10);
-		this->usada = false;
 	}
 	void doSomething();
-	void usar();
-	bool getUsada();
 	bool colision(int x, int y);
 	bool puedeMoverse(Direction dir);
 	void moverPiedra(Direction dir);
-private:
-	bool usada = false;
 };
 
 class Bullet : public Actor {
@@ -98,17 +93,15 @@ public:
 class Hole : public Actor {
 public:
 	Hole(int startx, int starty, StudentWorld* world) : Actor(IID_HOLE, startx, starty, none, world) {
-		this->llenado = false;
+		this->setAlive();
 	}
-	void llenar();
-	bool getLlenado();
-private:
-	bool llenado = false;
+	void doSomething();
 };
 
 class Jewel : public Actor {
 public:
 	Jewel(int startx, int starty, StudentWorld* world) : Actor(IID_JEWEL, startx, starty, none, world) {
+		this->setAlive();
 		this->recogido = false;
 	}
 	void setRecogido(bool estado);
@@ -120,24 +113,23 @@ private:
 class Exit : public Actor {
 public:
 	Exit(int startx, int starty, StudentWorld* world) : Actor(IID_EXIT, startx, starty, none, world) {
+		this->setAlive();
 		this->setVisible(false);
-		this->accesible = false;
-		this->i = 0;
+		this->revelada = false;
 	}
 	void doSomething();
 	void JoyasRecolectadas();//Hace visible a la salida
 	void JoyasPerdidas();//Vuelve a ocultar a la salida
-	bool getAccesible();
-	int getIterator();
-	void setIterator(int i);
+	void setRevelada(bool estado);
+	bool getRevelada();	
 private:
-	bool accesible = false;
-	int i = 0;
+	bool revelada;
 };
 
 class Goodie : public Actor {
 public:
 	Goodie(int startx, int starty, StudentWorld* world, int ID) : Actor(ID, startx, starty, none, world) {
+		this->setAlive();
 		this->recogido;
 	}
 	void setRecogido(bool estado);
@@ -198,6 +190,7 @@ class KleptobotFactory : public Actor {
 public:
 	KleptobotFactory(int startx, int starty, StudentWorld* world) : Actor(IID_ROBOT_FACTORY, startx, starty, right, world) {
 		//Produce kleptobots normales
+		this->setAlive();
 	}
 };
 
