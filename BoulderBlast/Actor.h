@@ -184,27 +184,49 @@ class Kleptobot : public Actor {
 public:
 	Kleptobot(int startx, int starty, StudentWorld* world, int IID, bool angry) : Actor(IID, startx, starty, right, world) {
 		this->setAlive();
-		if (!angry) {
+		this->contador = 0;
+		this->ticks = Descanso();
+		this->angry = angry;
+		if (!angry) {//Definir si angrykleptbot o no
 			this->setHealth(5);
 		}
 		else {
 			this->setHealth(8);
-		}
-		
+		}	
 	}
+	void doSomething();
+	bool colision(int x, int y);
+	void decreaseHealth(int amount);
+	void morir();
+	void setHaRobado(bool estado);
+	bool getHaRobado();
+	bool isAngry();
+private:
+	int ticks;
+	int contador;
+	bool angry = false;
+	bool haRobado = false;
+	int Descanso();
+	int distanciaGiro = 0;
+	GraphObject* goodieRobado = nullptr;
+	void distanciaDireccion();
+	bool robar();
+	bool movimiento();
+	bool disparar();
+	void accionNormal();
+	void accionAngry();
 };
 
 class KleptobotFactory : public Actor {
 public:
 	KleptobotFactory(int startx, int starty, StudentWorld* world, bool angry) : Actor(IID_ROBOT_FACTORY, startx, starty, none, world) {
 		this->setAlive();
-		this->angry = angry;
-		this->getWorld()->playSound(SOUND_ROBOT_BORN);
+		this->angry = angry;	
 	}
 	void doSomething();
 	bool puedeFabricar();
 	void fabricar();
-	bool getAngry();
+	bool isAngry();
 private:
 	bool angry = false;
 };

@@ -40,6 +40,8 @@ public:
 	void setGameText();
 	void addActor(GraphObject* g);
 	GraphObject* getActorByCoordinates(int x, int y);
+	GraphObject* getActorPorCoordIID(int x, int y, int IID);
+	GraphObject* getActorPorCoordReversa(int x, int y);
 	void anotherGoodieAtThisLocation(int x, int y);
 	void resetNumJewels();
 	void increaseNumJewels();
