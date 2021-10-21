@@ -204,6 +204,31 @@ GraphObject* StudentWorld::getActorByCoordinates(int x, int y) {
 	return nullptr;
 }
 
+//Modificacion ligera de getActorByCoordinates(), retorna solo si el objeto es el IID que se quiere, osea cierto actor
+GraphObject* StudentWorld::getActorPorCoordIID(int x, int y, int IID) {
+	for (int i = 0; i < actorVector.size(); i++) {
+		if ((actorVector[i])->getX() == x && (actorVector[i])->getY() == y) {
+			GraphObject* posible = actorVector[i];		
+			if (posible->getID() == IID) {//Retornar solo si es el graph que quiero			
+				return actorVector[i];
+			}			
+		}
+	}
+	return nullptr;
+}
+
+//Los mismo que getActorByCoordinates() pero inicia desde el final para encontrar elementos que se anadieron luego de cargar el mapa
+GraphObject* StudentWorld::getActorPorCoordReversa(int x, int y) {
+	int i = actorVector.size() - 1;
+	while (i > 0) {
+		if ((actorVector[i])->getX() == x && (actorVector[i])->getY() == y) {				
+			return actorVector[i];
+		}
+		i--;
+	}
+	return nullptr;
+}
+
 int StudentWorld::getNumActors() {
 	numActors = actorVector.size();
 	return numActors;
