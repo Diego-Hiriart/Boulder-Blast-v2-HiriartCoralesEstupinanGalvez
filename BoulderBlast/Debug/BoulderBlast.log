@@ -1,2 +1,4 @@
 ﻿  Actor.cpp
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\Actor.cpp(851): warning C4715: 'Kleptobot::movimiento': not all control paths return a value
+C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\BoulderBlast\Actor.cpp(949): warning C4715: 'Kleptobot::robar': not all control paths return a value
   BoulderBlast.vcxproj -> C:\Code-UDLA\Progra 5\Boulder-Blast-v2-HiriartCoralesEstupinanGalvez\Debug\BoulderBlast.exe
